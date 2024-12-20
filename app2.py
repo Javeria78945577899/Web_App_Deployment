@@ -8,14 +8,6 @@ from st_aggrid import AgGrid
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# Install required packages (if missing)
-required_packages = ["pandas", "streamlit", "plotly", "st-aggrid", "seaborn", "openpyxl"]
-for package in required_packages:
-    try:
-        __import__(package)
-    except ImportError:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
 # Cache the data loading to improve performance
 @st.cache
 def load_data():
