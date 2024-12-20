@@ -9,6 +9,16 @@ import pandas as pd
 import plotly.express as px
 import os
 
+# Install dependencies if not already installed
+required_packages = ["pandas", "streamlit", "plotly"]
+
+for package in required_packages:
+    try:
+        __import__(package)
+    except ImportError:
+        print(f"{package} not found. Installing...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
 # Load the data
 data = pd.read_csv("combined_data_final_with_images.csv")
 
