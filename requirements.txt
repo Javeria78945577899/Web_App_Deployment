@@ -2,4 +2,6 @@ pandas
 streamlit
 plotly
 streamlit-aggrid
-
+seaborn
+matplotlib
+openpyxl
