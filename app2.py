@@ -23,21 +23,25 @@ for col in categorical_columns:
 # Ensure Year columns are numeric and handle missing values
 if "Development" in data.columns:
     data["Development"] = pd.to_numeric(data["Development"], errors="coerce").fillna(-1).astype(int)
+    valid_years = sorted(data["Development"].unique())
+    valid_years = [year for year in valid_years if year > 0]  # Only include valid years
 
 # Sidebar filters
 st.sidebar.header("Filter Options")
 
 # Weapon Category Filter
-if not data["Weapon Category"].dropna().empty:
-    weapon_category = st.sidebar.multiselect("Weapon Category", options=data["Weapon Category"].unique())
-else:
-    weapon_category = None
+weapon_category = st.sidebar.selectbox(
+    "Weapon Category",
+    options=["Choose an option"] + list(data["Weapon Category"].unique()),
+    index=0
+)
 
 # Origin Filter
-if not data["Origin"].dropna().empty:
-    origin = st.sidebar.multiselect("Origin", options=data["Origin"].unique())
-else:
-    origin = None
+origin = st.sidebar.selectbox(
+    "Origin",
+    options=["Choose an option"] + list(data["Origin"].unique()),
+    index=0
+)
 
 # Caliber Slider
 valid_caliber_data = data[data["Caliber"] > 0]  # Filter out invalid values
@@ -49,25 +53,24 @@ else:
     caliber = None
 
 # Year Dropdown Filter (for Development Year)
-if "Development" in data.columns and not data["Development"].dropna().empty:
-    valid_years = sorted(data["Development"].unique())
-    year = st.sidebar.selectbox("Select Development Year", options=valid_years)
+if "Development" in data.columns and valid_years:
+    year = st.sidebar.selectbox("Select Development Year", options=["Choose an option"] + valid_years, index=0)
 else:
     year = None
 
-# Filter data based on selected options
+# Filter the data based on selected options
 filtered_data = data.copy()
 
-if weapon_category:
-    filtered_data = filtered_data[filtered_data["Weapon Category"].isin(weapon_category)]
+if weapon_category and weapon_category != "Choose an option":
+    filtered_data = filtered_data[filtered_data["Weapon Category"] == weapon_category]
 
-if origin:
-    filtered_data = filtered_data[filtered_data["Origin"].isin(origin)]
+if origin and origin != "Choose an option":
+    filtered_data = filtered_data[filtered_data["Origin"] == origin]
 
 if caliber:
     filtered_data = filtered_data[filtered_data["Caliber"] == caliber]
 
-if year:
+if year and year != "Choose an option":
     filtered_data = filtered_data[filtered_data["Development"] == year]
 
 # Main content
@@ -103,7 +106,7 @@ if not filtered_data.empty:
             image_path = os.path.join(image_base_dir, category, image_name)
 
             if os.path.exists(image_path):
-                st.image(image_path, caption=row["Weapon Name"], use_column_width=True)
+                st.image(image_path, caption=row["Weapon Name"], use_container_width=True)
 else:
     st.warning("No images available for the filtered data.")
 
