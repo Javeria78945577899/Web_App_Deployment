@@ -2,11 +2,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import os
-
-# Required packages (this part installs missing packages)
 import subprocess
 import sys
 
+# Required packages installation
 required_packages = ["pandas", "streamlit", "plotly"]
 
 for package in required_packages:
@@ -114,12 +113,9 @@ if not filtered_data.empty:
             image_name = row["Downloaded_Image_Name"]
             image_path = os.path.join(image_base_dir, category, image_name)
             
+            # Check if the image exists before trying to display it
             if os.path.exists(image_path):
                 st.image(image_path, caption=row["Weapon Name"], use_container_width=True)
-            else:
-                st.warning(f"Image not found: {image_path}")
-else:
-    st.warning("No images available for the filtered data.")
 
 # Export data
 st.write("### Export Filtered Data")
