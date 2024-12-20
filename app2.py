@@ -1,15 +1,12 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import os
 
-# Install dependencies if not already installed
+# Required packages (this part installs missing packages)
+import subprocess
+import sys
+
 required_packages = ["pandas", "streamlit", "plotly"]
 
 for package in required_packages:
@@ -30,36 +27,45 @@ for col in numeric_columns:
 
 categorical_columns = ["Weapon Category", "Origin"]
 for col in categorical_columns:
-    data[col] = data[col].fillna("Unknown")
+    data[col] = data[col].fillna("Unknown")  # Replace missing categorical values with 'Unknown'
 
 # Sidebar filters
 st.sidebar.header("Filter Options")
-weapon_category = st.sidebar.multiselect("Weapon Category", options=data["Weapon Category"].unique())
-origin = st.sidebar.multiselect("Origin", options=data["Origin"].unique())
 
-# Ensure valid range for Caliber slider
+# Filter options initialization
+filters = {}
+
+# Add Weapon Category filter if valid values exist
+if not data["Weapon Category"].dropna().empty:
+    weapon_category = st.sidebar.multiselect("Weapon Category", options=data["Weapon Category"].unique())
+    if weapon_category:
+        filters["Weapon Category"] = weapon_category
+
+# Add Origin filter if valid values exist
+if not data["Origin"].dropna().empty:
+    origin = st.sidebar.multiselect("Origin", options=data["Origin"].unique())
+    if origin:
+        filters["Origin"] = origin
+
+# Add Caliber slider if valid numeric data exists
 valid_caliber_data = data[data["Caliber"] > 0]  # Filter out invalid values
 if not valid_caliber_data.empty:
     min_caliber = int(valid_caliber_data["Caliber"].min())
     max_caliber = int(valid_caliber_data["Caliber"].max())
-    caliber = st.sidebar.slider(
-        "Caliber (mm)",
-        min_value=min_caliber,
-        max_value=max_caliber,
-        step=1,
-    )
-else:
-    st.sidebar.warning("No valid Caliber data available.")
-    caliber = None
+    caliber = st.sidebar.slider("Caliber (mm)", min_value=min_caliber, max_value=max_caliber, step=1)
+    filters["Caliber"] = caliber
 
-# Filter the data based on user selection
+# Filter the data based on selected filters
 filtered_data = data.copy()
-if weapon_category:
-    filtered_data = filtered_data[filtered_data["Weapon Category"].isin(weapon_category)]
-if origin:
-    filtered_data = filtered_data[filtered_data["Origin"].isin(origin)]
-if caliber is not None and caliber != -1:  # Exclude default or invalid values
-    filtered_data = filtered_data[filtered_data["Caliber"] == caliber]
+
+if "Weapon Category" in filters:
+    filtered_data = filtered_data[filtered_data["Weapon Category"].isin(filters["Weapon Category"])]
+
+if "Origin" in filters:
+    filtered_data = filtered_data[filtered_data["Origin"].isin(filters["Origin"])]
+
+if "Caliber" in filters:
+    filtered_data = filtered_data[filtered_data["Caliber"] == filters["Caliber"]]
 
 # Main content
 st.title("Weapon Insights Dashboard")
@@ -126,4 +132,3 @@ if not filtered_data.empty:
     )
 else:
     st.warning("No filtered data available for download.")
-
