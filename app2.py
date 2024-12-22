@@ -1,76 +1,75 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import os
+import plotly.express as px
+from fpdf import FPDF
+from sqlalchemy import create_engine
 
-# Cache the data loading to improve performance
+
+# Database connection details
+DB_HOST = "localhost"
+DB_USER = "root"
+DB_PASSWORD = "AT2226895javeria!"
+DB_NAME = "weapondata_final"
+
+# Define the database connection
+@st.cache_resource
+def get_engine():
+    engine = create_engine(f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}")
+    return engine
+
+engine = get_engine()
+
+# Path to the folder containing preprocessed images
+IMAGE_FOLDER = "weapon_images_final1"
+
+# Load data from weapon_data1
 @st.cache_data
 def load_data():
-    return pd.read_csv("combined_data_final_with_images.csv")
+    query = """
+    SELECT wd.*, di.preprocessed_path 
+    FROM weapon_data1 wd
+    LEFT JOIN dbo_images di 
+    ON wd.Weapon_Name = SUBSTRING_INDEX(di.image_name, '_aug', 1);
+    """
+    data = pd.read_sql(query, engine)
+    return data
 
-# Load the data
+# Load data
 data = load_data()
 
-# Handle missing or invalid data
-numeric_columns = ["Caliber"]
-for col in numeric_columns:
-    data[col] = pd.to_numeric(data[col], errors="coerce").fillna(-1)  # Convert invalid values to NaN and replace with -1
-
-categorical_columns = ["Weapon Category", "Origin"]
-for col in categorical_columns:
-    data[col] = data[col].fillna("Unknown")  # Replace missing categorical values with 'Unknown'
-
-# Ensure Year columns are numeric and handle missing values
-if "Development" in data.columns:
-    data["Development"] = pd.to_numeric(data["Development"], errors="coerce").fillna(-1).astype(int)
-    valid_years = sorted(data["Development"].unique())
-    valid_years = [year for year in valid_years if year > 0]  # Only include valid years
+# Function to recursively search for an image in subfolders
+def find_image_recursive(base_folder, image_name):
+    for root, dirs, files in os.walk(base_folder):
+        if image_name in files:
+            return os.path.join(root, image_name)
+    return None
 
 # Sidebar filters
 st.sidebar.header("Filter Options")
-
-# Weapon Category Filter
 weapon_category = st.sidebar.selectbox(
-    "Weapon Category",
-    options=["Choose an option"] + list(data["Weapon Category"].unique()),
+    "Weapon Category", 
+    options=["Choose an option"] + list(data["Weapon_Category"].unique()), 
     index=0
 )
-
-# Origin Filter
 origin = st.sidebar.selectbox(
-    "Origin",
-    options=["Choose an option"] + list(data["Origin"].unique()),
+    "Origin", 
+    options=["Choose an option"] + list(data["Origin"].unique()), 
+    index=0
+)
+year = st.sidebar.selectbox(
+    "Select Development Year",
+    options=["Choose an option"] + sorted(data["Development"].dropna().unique().tolist()),
     index=0
 )
 
-# Caliber Slider
-valid_caliber_data = data[data["Caliber"] > 0]  # Filter out invalid values
-if not valid_caliber_data.empty:
-    min_caliber = int(valid_caliber_data["Caliber"].min())
-    max_caliber = int(valid_caliber_data["Caliber"].max())
-    caliber = st.sidebar.slider("Caliber (mm)", min_value=min_caliber, max_value=max_caliber, step=1)
-else:
-    caliber = None
-
-# Year Dropdown Filter (for Development Year)
-if "Development" in data.columns and valid_years:
-    year = st.sidebar.selectbox("Select Development Year", options=["Choose an option"] + valid_years, index=0)
-else:
-    year = None
-
-# Filter the data based on selected options
+# Filter the data based on selections
 filtered_data = data.copy()
-
-if weapon_category and weapon_category != "Choose an option":
-    filtered_data = filtered_data[filtered_data["Weapon Category"] == weapon_category]
-
-if origin and origin != "Choose an option":
+if weapon_category != "Choose an option":
+    filtered_data = filtered_data[filtered_data["Weapon_Category"] == weapon_category]
+if origin != "Choose an option":
     filtered_data = filtered_data[filtered_data["Origin"] == origin]
-
-if caliber:
-    filtered_data = filtered_data[filtered_data["Caliber"] == caliber]
-
-if year and year != "Choose an option":
+if year != "Choose an option":
     filtered_data = filtered_data[filtered_data["Development"] == year]
 
 # Main content
@@ -81,32 +80,54 @@ st.write("Explore weapon specifications, search, and visualize data interactivel
 st.write("### Filtered Data Table")
 st.dataframe(filtered_data)
 
-# Plot visuals
+# Threat Distribution by Origin
 st.write("### Threat Distribution by Origin")
 if not filtered_data.empty:
     fig = px.bar(
         filtered_data,
         x="Origin",
-        y="Weapon Name",
-        color="Weapon Category",
+        y="Weapon_Name",
+        color="Weapon_Category",
         title="Threat Distribution by Origin",
+        labels={"Weapon_Name": "Weapon Count", "Origin": "Country of Origin"},
     )
     st.plotly_chart(fig)
 else:
     st.warning("No data available for visualization.")
 
-# Display images
+# Display images in a grid layout
 st.write("### Weapon Images")
-image_base_dir = "weapon_images_final1"
+placeholder_image_path = "weapon_images_final1/placeholder.jpeg"  # Ensure this exists
 if not filtered_data.empty:
-    for _, row in filtered_data.iterrows():
-        if pd.notnull(row["Downloaded_Image_Name"]):
-            category = row["Weapon Category"]
-            image_name = row["Downloaded_Image_Name"]
-            image_path = os.path.join(image_base_dir, category, image_name)
+    cols_per_row = 6  # Number of images per row for better spacing
+    rows = [filtered_data.iloc[i:i + cols_per_row] for i in range(0, len(filtered_data), cols_per_row)]
 
-            if os.path.exists(image_path):
-                st.image(image_path, caption=row["Weapon Name"], use_container_width=True)
+    for row in rows:
+        num_cols = min(len(row), cols_per_row)  # Adjust the number of columns dynamically
+        cols = st.columns(num_cols, gap="large")  # Adjust gap for better spacing
+
+        for col, (idx, weapon) in zip(cols, row.iterrows()):
+            # Adjust column name as per actual dataset
+            image_name = weapon.get("Downloaded_Image_Name", weapon.get("Weapon_Name"))
+            if pd.notnull(image_name):
+                # Search for image in subfolders
+                image_path = find_image_recursive(IMAGE_FOLDER, image_name)
+
+                if image_path:  # If image is found
+                    col.image(image_path, caption=weapon["Weapon_Name"], use_container_width=True)
+                elif os.path.exists(placeholder_image_path):  # If placeholder exists
+                    col.image(placeholder_image_path, caption="Image Not Available", use_container_width=True)
+                else:  # If no image or placeholder is found
+                    col.error("Image and placeholder not found.")
+
+                # Add details button with a unique key
+                if col.button(f"Details: {weapon['Weapon_Name']}", key=f"details_button_{idx}"):
+                    with st.expander(f"Details of {weapon['Weapon_Name']}", expanded=True):
+                        st.write("**Name:**", weapon["Weapon_Name"])
+                        st.write("**Category:**", weapon["Weapon_Category"])
+                        st.write("**Origin:**", weapon["Origin"])
+                        st.write("**Development Year:**", weapon["Development"])
+                        st.write("**Type:**", weapon["Type"])
 else:
     st.warning("No images available for the filtered data.")
 
@@ -121,3 +142,11 @@ if not filtered_data.empty:
     )
 else:
     st.warning("No filtered data available for download.")
+
+
+
+
+
+
+
+
