@@ -7,3 +7,4 @@ matplotlib
 openpyxl
 fpdf
 fpdf2
+sqlalchemy
