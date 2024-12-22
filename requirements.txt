@@ -5,3 +5,5 @@ streamlit-aggrid
 seaborn
 matplotlib
 openpyxl
+fpdf
+fpdf2
