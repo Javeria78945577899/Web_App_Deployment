@@ -2,20 +2,19 @@ import streamlit as st
 import pandas as pd
 import os
 import plotly.express as px
-from fpdf import FPDF
 from sqlalchemy import create_engine
 
-
 # Database connection details
-DB_HOST = "localhost"
+DB_HOST = "junction.proxy.rlwy.net"
 DB_USER = "root"
-DB_PASSWORD = "AT2226895javeria!"
-DB_NAME = "weapondata_final"
+DB_PASSWORD = "GKesHFOMJkurJYvpaVNuqRgTEGYOgFQN"
+DB_NAME = "railway"
+DB_PORT = "27554"
 
 # Define the database connection
 @st.cache_resource
 def get_engine():
-    engine = create_engine(f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}")
+    engine = create_engine(f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
     return engine
 
 engine = get_engine()
@@ -27,7 +26,7 @@ IMAGE_FOLDER = "weapon_images_final1"
 @st.cache_data
 def load_data():
     query = """
-    SELECT wd.*, di.preprocessed_path 
+    SELECT wd.*
     FROM weapon_data1 wd
     LEFT JOIN dbo_images di 
     ON wd.Weapon_Name = SUBSTRING_INDEX(di.image_name, '_aug', 1);
@@ -95,7 +94,6 @@ if not filtered_data.empty:
 else:
     st.warning("No data available for visualization.")
 
-
 # Display images in a grid layout
 st.write("### Weapon Images")
 placeholder_image_path = "weapon_images_final1/placeholder.jpeg"  # Ensure this exists
@@ -106,10 +104,8 @@ if not filtered_data.empty:
     for row in rows:
         cols = st.columns(cols_per_row)
         for col, (idx, weapon) in zip(cols, row.iterrows()):
-            # Adjust column name as per actual dataset
             image_name = weapon.get("Downloaded_Image_Name", weapon.get("Weapon_Name"))
             if pd.notnull(image_name):
-                # Search for image in subfolders
                 image_path = find_image_recursive(IMAGE_FOLDER, image_name)
 
                 if image_path:  # If image is found
@@ -119,7 +115,6 @@ if not filtered_data.empty:
                 else:  # If no image or placeholder is found
                     col.error("Image and placeholder not found.")
 
-                # Add details button with a unique key
                 if col.button(f"Details: {weapon['Weapon_Name']}", key=f"details_button_{idx}"):
                     with st.expander(f"Details of {weapon['Weapon_Name']}", expanded=True):
                         st.write("**Name:**", weapon["Weapon_Name"])
@@ -129,8 +124,6 @@ if not filtered_data.empty:
                         st.write("**Type:**", weapon["Type"])
 else:
     st.warning("No images available for the filtered data.")
-
-
 
 # Export filtered data
 st.write("### Export Filtered Data")
@@ -143,11 +136,3 @@ if not filtered_data.empty:
     )
 else:
     st.warning("No filtered data available for download.")
-
-
-
-
-
-
-
-
