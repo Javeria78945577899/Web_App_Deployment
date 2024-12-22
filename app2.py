@@ -95,17 +95,16 @@ if not filtered_data.empty:
 else:
     st.warning("No data available for visualization.")
 
+
 # Display images in a grid layout
 st.write("### Weapon Images")
 placeholder_image_path = "weapon_images_final1/placeholder.jpeg"  # Ensure this exists
 if not filtered_data.empty:
-    cols_per_row = 6  # Number of images per row for better spacing
+    cols_per_row = 6  # Number of images per row
     rows = [filtered_data.iloc[i:i + cols_per_row] for i in range(0, len(filtered_data), cols_per_row)]
 
     for row in rows:
-        num_cols = min(len(row), cols_per_row)  # Adjust the number of columns dynamically
-        cols = st.columns(num_cols, gap="large")  # Adjust gap for better spacing
-
+        cols = st.columns(cols_per_row)
         for col, (idx, weapon) in zip(cols, row.iterrows()):
             # Adjust column name as per actual dataset
             image_name = weapon.get("Downloaded_Image_Name", weapon.get("Weapon_Name"))
@@ -130,6 +129,8 @@ if not filtered_data.empty:
                         st.write("**Type:**", weapon["Type"])
 else:
     st.warning("No images available for the filtered data.")
+
+
 
 # Export filtered data
 st.write("### Export Filtered Data")
