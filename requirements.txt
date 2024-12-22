@@ -1,10 +1,6 @@
-pandas
 streamlit
-plotly
-streamlit-aggrid
-seaborn
-matplotlib
-openpyxl
-fpdf
-fpdf2
+pandas
 sqlalchemy
+pymysql
+plotly
+fpdf
