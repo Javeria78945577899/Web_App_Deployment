@@ -233,15 +233,15 @@ with col3:
         next_news()
 
 
-# Handle other pages dynamically
-else:
-    page_name = st.session_state.current_page
-    page_file = f"{page_name.replace(' ', '_').lower()}.py"
-    page_path = os.path.join(pages_dir, page_file)
+# Dynamically load other pages
+page_name = st.session_state.current_page
+page_file = f"{page_name.replace(' ', '_').lower()}.py"
+page_path = os.path.join(pages_dir, page_file)
+
+if st.session_state.current_page not in ["Home", "News Section"]:  # Avoid overwriting existing pages
     if os.path.exists(page_path):
         spec = importlib.util.spec_from_file_location(page_name, page_path)
         module = importlib.util.module_from_spec(spec)
-        sys.modules[page_name] = module
         spec.loader.exec_module(module)
     else:
         st.error(f"Page '{page_name}' not found.")
