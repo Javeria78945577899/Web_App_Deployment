@@ -19,15 +19,12 @@ def get_engine():
 
 engine = get_engine()
 
-# Path to the folder containing preprocessed images
-IMAGE_FOLDER = "weapon_images_final1"
-
 # Load data from weapon_data1
 @st.cache_data
 def load_data():
     query = """
-    SELECT wd.*
-    FROM weapon_data1 wd
+    SELECT wd.* 
+    FROM weapon_data1 wd 
     LEFT JOIN dbo_images di 
     ON wd.Weapon_Name = SUBSTRING_INDEX(di.image_name, '_aug', 1);
     """
@@ -37,102 +34,196 @@ def load_data():
 # Load data
 data = load_data()
 
-# Function to recursively search for an image in subfolders
-def find_image_recursive(base_folder, image_name):
-    for root, dirs, files in os.walk(base_folder):
-        if image_name in files:
-            return os.path.join(root, image_name)
-    return None
+# Base image directory
+IMAGE_FOLDER = "weapon_images_final1"
+placeholder_image_path = os.path.join(IMAGE_FOLDER, "placeholder.jpeg")
 
-# Sidebar filters
-st.sidebar.header("Filter Options")
-weapon_category = st.sidebar.selectbox(
-    "Weapon Category", 
-    options=["Choose an option"] + list(data["Weapon_Category"].unique()), 
-    index=0
-)
-origin = st.sidebar.selectbox(
-    "Origin", 
-    options=["Choose an option"] + list(data["Origin"].unique()), 
-    index=0
-)
-year = st.sidebar.selectbox(
-    "Select Development Year",
-    options=["Choose an option"] + sorted(data["Development"].dropna().unique().tolist()),
-    index=0
-)
+# Handle Page Navigation
+if "current_page" not in st.session_state:
+    st.session_state.current_page = "Home"
 
-# Filter the data based on selections
-filtered_data = data.copy()
-if weapon_category != "Choose an option":
-    filtered_data = filtered_data[filtered_data["Weapon_Category"] == weapon_category]
-if origin != "Choose an option":
-    filtered_data = filtered_data[filtered_data["Origin"] == origin]
-if year != "Choose an option":
-    filtered_data = filtered_data[filtered_data["Development"] == year]
+# Navigation Function
+def navigate_to(page):
+    st.session_state.current_page = page
 
-# Main content
-st.title("Weapon Insights Dashboard")
-st.write("Explore weapon specifications, search, and visualize data interactively.")
+# Main Navigation Bar
+st.sidebar.markdown("### Navigation")
+if st.sidebar.button("Back to Dashboard"):
+    navigate_to("Home")
 
-# Display filtered data
-st.write("### Filtered Data Table")
-st.dataframe(filtered_data)
+categories = sorted(data["Weapon_Category"].dropna().unique())
+for category in categories:
+    if st.sidebar.button(f"Go to {category}", key=category):
+        navigate_to(category)
 
-# Threat Distribution by Origin
-st.write("### Threat Distribution by Origin")
-if not filtered_data.empty:
-    fig = px.bar(
-        filtered_data,
-        x="Origin",
-        y="Weapon_Name",
-        color="Weapon_Category",
-        title="Threat Distribution by Origin",
-        labels={"Weapon_Name": "Weapon Count", "Origin": "Country of Origin"},
-    )
-    st.plotly_chart(fig)
-else:
-    st.warning("No data available for visualization.")
+# Main Content
+if st.session_state.current_page == "Home":
+    st.title("Weapon Insights Dashboard")
+    st.write("Explore weapon specifications, search, and visualize data interactively.")
 
-# Display images in a grid layout
-st.write("### Weapon Images")
-placeholder_image_path = "weapon_images_final1/placeholder.jpeg"  # Ensure this exists
-if not filtered_data.empty:
-    cols_per_row = 6  # Number of images per row
-    rows = [filtered_data.iloc[i:i + cols_per_row] for i in range(0, len(filtered_data), cols_per_row)]
+    # Display filtered data
+    st.write("### Filtered Data Table")
+    st.dataframe(data)
 
+    # Threat Distribution by Origin
+    st.write("### Threat Distribution by Origin")
+    if not data.empty:
+        fig = px.bar(
+            data,
+            x="Origin",
+            y="Weapon_Name",
+            color="Weapon_Category",
+            title="Threat Distribution by Origin",
+            labels={"Weapon_Name": "Weapon Name", "Origin": "Country of Origin"},
+        )
+        st.plotly_chart(fig)
+    else:
+        st.warning("No data available for visualization.")
+
+    # Load Top 5 Countries Data
+    @st.cache_data
+    def load_top_countries():
+        query = """
+    SELECT Origin, COUNT(*) as Weapon_Count
+    FROM weapon_data1
+    GROUP BY Origin
+    ORDER BY Weapon_Count DESC
+    LIMIT 5;
+    """
+        return pd.read_sql(query, engine)
+
+    # Display Top 5 Countries Map
+    top_countries_data = load_top_countries()
+    st.title("Top 5 Countries by Weapon Production")
+    st.write("This map shows the top 5 countries that produce the highest number of weapons.")
+
+    if not top_countries_data.empty:
+        # Display the map
+        st.write("### Top 5 Countries Map")
+        fig = px.choropleth(
+            top_countries_data,
+            locations="Origin",
+            locationmode="country names",
+            color="Weapon_Count",
+            hover_name="Origin",
+            title="Top 5 Countries by Weapon Production",
+            color_continuous_scale=px.colors.sequential.Plasma,
+        )
+        fig.update_layout(geo=dict(showframe=False, showcoastlines=True, projection_type="natural earth"))
+        st.plotly_chart(fig)
+
+        # Display the data in a table
+        st.write("### Top 5 Countries Data")
+        st.dataframe(top_countries_data)
+    else:
+        st.warning("No data available to display.")
+
+    # Display Categories with Representative Images
+    st.write("### Weapon Categories")
+    cols_per_row = 3
+    rows = [categories[i:i + cols_per_row] for i in range(0, len(categories), cols_per_row)]
     for row in rows:
-        cols = st.columns(cols_per_row)
-        for col, (idx, weapon) in zip(cols, row.iterrows()):
-            image_name = weapon.get("Downloaded_Image_Name", weapon.get("Weapon_Name"))
-            if pd.notnull(image_name):
-                image_path = find_image_recursive(IMAGE_FOLDER, image_name)
+        cols = st.columns(len(row))
+        for col, category in zip(cols, row):
+            category_dir = os.path.join(IMAGE_FOLDER, category.replace(" ", "_"))
 
-                if image_path:  # If image is found
-                    col.image(image_path, caption=weapon["Weapon_Name"], use_container_width=True)
-                elif os.path.exists(placeholder_image_path):  # If placeholder exists
-                    col.image(placeholder_image_path, caption="Image Not Available", use_container_width=True)
-                else:  # If no image or placeholder is found
-                    col.error("Image and placeholder not found.")
+            category_image = None
+            if os.path.exists(category_dir) and os.path.isdir(category_dir):
+                for file_name in os.listdir(category_dir):
+                    if file_name.lower().endswith((".png", ".jpg", ".jpeg")):
+                        category_image = os.path.join(category_dir, file_name)
+                        break
 
-                if col.button(f"Details: {weapon['Weapon_Name']}", key=f"details_button_{idx}"):
-                    with st.expander(f"Details of {weapon['Weapon_Name']}", expanded=True):
-                        st.write("**Name:**", weapon["Weapon_Name"])
-                        st.write("**Category:**", weapon["Weapon_Category"])
-                        st.write("**Origin:**", weapon["Origin"])
-                        st.write("**Development Year:**", weapon["Development"])
-                        st.write("**Type:**", weapon["Type"])
+            if category_image and os.path.exists(category_image):
+                col.image(category_image, caption=category, use_container_width=True)
+            elif os.path.exists(placeholder_image_path):
+                col.image(placeholder_image_path, caption=f"{category} (Placeholder)", use_container_width=True)
+            else:
+                col.error(f"No image available for {category}")
+
+            if col.button(f"Visit {category}", key=f"visit-{category}"):
+                navigate_to(category)
+
+# Category Page
 else:
-    st.warning("No images available for the filtered data.")
+    category = st.session_state.current_page
+    st.title(f"Category: {category}")
+    st.write(f"Here are the details for the category: {category}")
 
-# Export filtered data
-st.write("### Export Filtered Data")
-if not filtered_data.empty:
-    st.download_button(
-        label="Download CSV",
-        data=filtered_data.to_csv(index=False),
-        file_name="filtered_data.csv",
-        mime="text/csv",
-    )
-else:
-    st.warning("No filtered data available for download.")
+    category_dir = os.path.join(IMAGE_FOLDER, category.replace(" ", "_"))
+    if os.path.exists(category_dir) and os.path.isdir(category_dir):
+        images = [
+            os.path.join(category_dir, f)
+            for f in os.listdir(category_dir)
+            if f.lower().endswith((".png", ".jpg", ".jpeg"))
+        ]
+        for img in images:
+            st.image(img, use_container_width=True)
+    else:
+        st.warning(f"No images available for the category: {category}")
+
+    if st.button("Back to Dashboard"):
+        navigate_to("Home")
+
+# News Section
+st.write("### News Section")
+
+# Prepare the data for the news
+news_data = data[["Weapon_Name", "Development", "Weight", "Status", "Downloaded_Image_Name"]].dropna().reset_index(
+    drop=True
+)
+total_news_items = len(news_data)
+
+# State to keep track of the current news index
+if "news_index" not in st.session_state:
+    st.session_state.news_index = 0
+
+
+# Function to move to the next news item
+def next_news():
+    st.session_state.news_index = (st.session_state.news_index + 1) % total_news_items
+
+
+# Function to move to the previous news item
+def prev_news():
+    st.session_state.news_index = (st.session_state.news_index - 1) % total_news_items
+
+
+# Display the current news item
+current_news = news_data.iloc[st.session_state.news_index]
+
+# Get the image for the current news item
+image_path = None
+if pd.notnull(current_news["Downloaded_Image_Name"]):
+    image_name = current_news["Downloaded_Image_Name"]
+    weapon_category = current_news["Weapon_Name"].replace(" ", "_")
+    category_folder = os.path.join(IMAGE_FOLDER, weapon_category)
+
+    if os.path.exists(category_folder) and os.path.isdir(category_folder):
+        image_path = os.path.join(category_folder, image_name)
+
+if not image_path or not os.path.exists(image_path):  # Use placeholder if image not found
+    image_path = placeholder_image_path
+
+# Display the news image
+st.image(
+    image_path,
+    caption=f"Image for {current_news['Weapon_Name']}",
+    use_container_width=True,
+)
+
+# Display the news description
+st.write(
+    f"**Here is {current_news['Weapon_Name']}**, developed in **{current_news['Development']}**, "
+    f"having a weight of **{current_news['Weight']}**. Its current status is **{current_news['Status']}**."
+)
+
+# Navigation buttons for the news
+col1, col2, col3 = st.columns([1, 1, 1])
+with col1:
+    if st.button("⬅️ Previous"):
+        prev_news()
+with col3:
+    if st.button("➡️ Next"):
+        next_news()
+
