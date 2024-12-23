@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import plotly.express as px
 from sqlalchemy import create_engine
+import importlib.util
 
 # Database connection details
 DB_HOST = "junction.proxy.rlwy.net"
@@ -51,10 +52,14 @@ st.sidebar.markdown("### Navigation")
 if st.sidebar.button("Back to Dashboard"):
     navigate_to("Home")
 
-categories = sorted(data["Weapon_Category"].dropna().unique())
-for category in categories:
-    if st.sidebar.button(f"Go to {category}", key=category):
-        navigate_to(category)
+# Dynamically detect pages from the Pages folder
+pages_dir = "Pages"
+if os.path.exists(pages_dir):
+    for file in os.listdir(pages_dir):
+        if file.endswith(".py") and file != "__init__.py":
+            page_name = file.replace(".py", "").replace("_", " ").title()
+            if st.sidebar.button(f"Go to {page_name}", key=file):
+                navigate_to(page_name)
 
 # Main Content
 if st.session_state.current_page == "Home":
@@ -226,4 +231,18 @@ with col1:
 with col3:
     if st.button("➡️ Next"):
         next_news()
+
+
+# Handle other pages dynamically
+else:
+    page_name = st.session_state.current_page
+    page_file = f"{page_name.replace(' ', '_').lower()}.py"
+    page_path = os.path.join(pages_dir, page_file)
+    if os.path.exists(page_path):
+        spec = importlib.util.spec_from_file_location(page_name, page_path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[page_name] = module
+        spec.loader.exec_module(module)
+    else:
+        st.error(f"Page '{page_name}' not found.")
 
