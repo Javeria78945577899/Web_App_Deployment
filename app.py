@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 import toml
 from fpdf import FPDF
 from pathlib import Path
+import os
 
 # Database connection details
 DB_HOST = "junction.proxy.rlwy.net"
@@ -263,18 +264,21 @@ else:
         # Replace special characters and normalize
         normalized_name = name.lower().replace("+", " ").replace("_", " ").replace("-", " ").strip()
         return normalized_name
-
-    # Function to find image files matching the category
+        
+    base_folder = os.path.join(os.getcwd(), "weapon_images_final1")
     def find_images_for_category(base_folder, category_name):
-        """Find all images in a folder matching the normalized category name."""
-        normalized_category = normalize_name(category_name)
-        images = []
-        for root, _, files in os.walk(base_folder):
-            if normalized_category in normalize_name(root):
-                for file in files:
-                    if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                        images.append((os.path.join(root, file), file))  # Return full path and file name
-        return images
+    """Find all images in a folder matching the normalized category name."""
+    normalized_category = normalize_name(category_name)
+    images = []
+    print(f"Looking for images in base folder: {base_folder}, category: {normalized_category}")
+    for root, _, files in os.walk(base_folder):
+        print(f"Checking directory: {root}")
+        if normalized_category in normalize_name(root):
+            for file in files:
+                if file.lower().endswith((".png", ".jpg", ".jpeg")):
+                    images.append((os.path.join(root, file), file))  # Return full path and file name
+    print(f"Found images: {images}")
+    return images
 
     # Function to load details for the images from the database
     def load_image_details(file_name):
