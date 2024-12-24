@@ -1,0 +1,244 @@
+[[pages]]
+name = "Bomber Aircraft"
+icon = "✈️"
+path = "Pages/Aircraft_Bomber aircraft.py"
+
+[[pages]]
+name = "Combat Helicopters"
+icon = "🚁"
+path = "Pages/Aircraft_Combat helicopters.py"
+
+[[pages]]
+name = "Fighter Aircraft"
+icon = "🛫"
+path = "Pages/Aircraft_Fighter aircraft.py"
+
+[[pages]]
+name = "Radar Special Aircraft"
+icon = "📡"
+path = "Pages/Aircraft_Radar_Special aircraft.py"
+
+[[pages]]
+name = "Radar Transport Aircraft"
+icon = "✈️"
+path = "Pages/Aircraft_Radar_Transport aircraft.py"
+
+[[pages]]
+name = "Utility Aircraft"
+icon = "✈️"
+path = "Pages/Aircraft_Radar_Utility aircraft.py"
+
+[[pages]]
+name = "Training and Light Strike Aircraft"
+icon = "✈️"
+path = "Pages/Aircraft_Training and light strike aircraft.py"
+
+[[pages]]
+name = "Utility Helicopters"
+icon = "🚁"
+path = "Pages/Aircraft_Utility helicopters.py"
+
+[[pages]]
+name = "Anti-tank Missiles"
+icon = "🎯"
+path = "Pages/Ammunitions_Anti-tank missiles.py"
+
+[[pages]]
+name = "Artillery Ammunition"
+icon = "💣"
+path = "Pages/Ammunitions_Artillery ammunition.py"
+
+[[pages]]
+name = "Artillery Rocket"
+icon = "🚀"
+path = "Pages/Ammunitions_Artillery rocket.py"
+
+[[pages]]
+name = "Autocannon Ammunition"
+icon = "🔫"
+path = "Pages/Ammunitions_Autocannon ammunition.py"
+
+[[pages]]
+name = "Firearms Ammunition"
+icon = "🔫"
+path = "Pages/Ammunitions_Firearms ammunition.py"
+
+[[pages]]
+name = "Surface to Air Missiles"
+icon = "🚀"
+path = "Pages/Ammunitions_Surface to air missile.py"
+
+[[pages]]
+name = "Surface to Surface Missiles"
+icon = "🚀"
+path = "Pages/Ammunitions_Surface to surface missile.py"
+
+[[pages]]
+name = "Anti-tank Gun"
+icon = "💣"
+path = "Pages/artillery_Anti-tank_gun.py"
+
+[[pages]]
+name = "Coastal Defense Systems"
+icon = "🌊"
+path = "Pages/Artillery_coastal_defense_system.py"
+
+[[pages]]
+name = "Mortar"
+icon = "💣"
+path = "Pages/artillery_mortar.py"
+
+[[pages]]
+name = "Multiple Rocket Launcher"
+icon = "🚀"
+path = "Pages/artillery_Multiple_rocket_launcher.py"
+
+[[pages]]
+name = "Self-propelled Howitzer"
+icon = "🚛"
+path = "Pages/artillery_self_propelled_howitzer.py"
+
+[[pages]]
+name = "Self-propelled Mortar"
+icon = "🚛"
+path = "Pages/artillery_Self_propelled_mortar.py"
+
+[[pages]]
+name = "Tactical Missile Systems"
+icon = "🎯"
+path = "Pages/artillery_Tactical_missile_system.py"
+
+[[pages]]
+name = "Towed Howitzer"
+icon = "🚜"
+path = "Pages/artillery_Towed_howitzer.py"
+
+[[pages]]
+name = "Air to Air Missiles"
+icon = "🚀"
+path = "Pages/Aviation_subsystems_Air_to_air_missile.py"
+
+[[pages]]
+name = "Air to Ground Missiles"
+icon = "💣"
+path = "Pages/Aviation_subsystems_Air_to_ground_missile.py"
+
+[[pages]]
+name = "Aviation Bombs"
+icon = "💣"
+path = "Pages/Aviation_subsystems_Aviation_bomb.py"
+
+[[pages]]
+name = "Aviation Pods"
+icon = "🛫"
+path = "Pages/Aviation_subsystems_Pods.py"
+
+[[pages]]
+name = "Assault Rifles"
+icon = "🔫"
+path = "Pages/Firearms_Assault_Rifles.py"
+
+[[pages]]
+name = "Machine Guns"
+icon = "🔫"
+path = "Pages/Firearms_Machine_Guns.py"
+
+[[pages]]
+name = "Pistols"
+icon = "🔫"
+path = "Pages/Firearms_Pistols.py"
+
+[[pages]]
+name = "Shotguns"
+icon = "🔫"
+path = "Pages/Firearms_Shotguns.py"
+
+[[pages]]
+name = "Special Firearms"
+icon = "🔫"
+path = "Pages/Firearms_Special.py"
+
+[[pages]]
+name = "Submachine Guns"
+icon = "🔫"
+path = "Pages/Firearms_Submachine_Guns.py"
+
+[[pages]]
+name = "Grenade Launchers"
+icon = "💣"
+path = "Pages/Infantry_Weapons_Grenade_Launcher.py"
+
+[[pages]]
+name = "Grenades"
+icon = "💣"
+path = "Pages/Infantry_Weapons_Grenades.py"
+
+[[pages]]
+name = "Heavy Machine Guns"
+icon = "🔫"
+path = "Pages/Infantry_Weapons_Hevey_Machine_Guns.py"
+
+[[pages]]
+name = "Man-Portable Anti-tank Missiles"
+icon = "🎯"
+path = "Pages/Infantry_Weapons_Man_Portable_Antitank_Missiles.py"
+
+[[pages]]
+name = "Recoilless Rifles"
+icon = "🔫"
+path = "Pages/Infantry_Weapons_Recoilles_Rifles.py"
+
+[[pages]]
+name = "Rocket Launchers"
+icon = "🚀"
+path = "Pages/Infantry_Weapons_rocket_launchers.py"
+
+[[pages]]
+name = "Autocannon"
+icon = "🔫"
+path = "Pages/Vehicle_subsystems_Autocannon.py"
+
+[[pages]]
+name = "Cannons"
+icon = "🔫"
+path = "Pages/Vehicle_subsystems_Cannon.py"
+
+[[pages]]
+name = "Armored Personnel Carriers"
+icon = "🚛"
+path = "Pages/Vehicles_Armored_personnel_carriers.py"
+
+[[pages]]
+name = "Engineer Vehicles"
+icon = "🚜"
+path = "Pages/Vehicles_Engineer_vehicles.py"
+
+[[pages]]
+name = "Fire Support Vehicles"
+icon = "🚜"
+path = "Pages/Vehicles_Fire_support_vehicles.py"
+
+[[pages]]
+name = "Infantry Fighting Vehicles"
+icon = "🚛"
+path = "Pages/Vehicles_Infantry_fighting_vehicles.py"
+
+[[pages]]
+name = "Main Battle Tanks"
+icon = "🚜"
+path = "Pages/Vehicles_Main_battle_tanks.py"
+
+[[pages]]
+name = "Reconnaissance Vehicles"
+icon = "🚙"
+path = "Pages/Vehicles_Reconnaissance_vehicles.py"
+
+[[pages]]
+name = "Transport Vehicles"
+icon = "🚛"
+path = "Pages/Vehicles_Transport_vehicles.py"
+
+[[pages]]
+name = "Utility Vehicles"
+icon = "🚗"
+path = "Pages/Vehicles_Utility_vehicles.py"
