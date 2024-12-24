@@ -5,3 +5,4 @@ pymysql
 plotly
 fpdf
 toml
+path
