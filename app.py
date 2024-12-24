@@ -5,6 +5,7 @@ import plotly.express as px
 from sqlalchemy import create_engine
 import toml
 from fpdf import FPDF
+from path import Path
 
 
 # Database connection details
@@ -39,12 +40,18 @@ def load_data():
 data = load_data()
 
 
+# Resolve the directory path
+dir = Path(__file__).abspath().parent
+os.chdir(dir)
+
 # Load the .toml configuration
 try:
-    pages_config = toml.load(".streamlit/pages.toml")
+    pages_config = toml.load(dir / ".streamlit/pages.toml")
 except Exception as e:
     st.error(f"Error loading pages.toml: {e}")
     st.stop()
+
+
 
 # Validate 'pages' key in the configuration
 if "pages" not in pages_config:
