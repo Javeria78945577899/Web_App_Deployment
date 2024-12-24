@@ -6,11 +6,6 @@ from sqlalchemy import create_engine
 import toml
 from fpdf import FPDF
 from pathlib import Path
-import os
-
-st.write("Current Working Directory:", os.getcwd())
-st.write("Files in Current Directory:", os.listdir())
-
 
 # Database connection details
 DB_HOST = "junction.proxy.rlwy.net"
