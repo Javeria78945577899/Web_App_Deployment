@@ -135,30 +135,42 @@ if st.session_state.current_page == "Home":
         st.warning("No data available to display.")
 
     # Display Categories with Representative Images
+    # Display Categories with Representative Images
     st.write("### Weapon Categories")
+    
     IMAGE_FOLDER = "weapon_images_final1"
     placeholder_image_path = os.path.join(IMAGE_FOLDER, "placeholder.jpeg")
     categories = sorted(data["Weapon_Category"].dropna().unique())
+    
     cols_per_row = 3
     rows = [categories[i:i + cols_per_row] for i in range(0, len(categories), cols_per_row)]
+
     for row in rows:
         cols = st.columns(len(row))
         for col, category in zip(cols, row):
-            category_dir = os.path.join(IMAGE_FOLDER, category.replace(" ", "_"))
-
+            # Get normalized category name
+            normalized_category = normalize_name(category)
+            
+            # Determine category image
+            category_dir = os.path.join(IMAGE_FOLDER, normalized_category)
             category_image = None
+            
             if os.path.exists(category_dir) and os.path.isdir(category_dir):
                 for file_name in os.listdir(category_dir):
                     if file_name.lower().endswith((".png", ".jpg", ".jpeg")):
                         category_image = os.path.join(category_dir, file_name)
                         break
-
+            # Display image or placeholder
             if category_image and os.path.exists(category_image):
                 col.image(category_image, caption=category, use_container_width=True)
             elif os.path.exists(placeholder_image_path):
                 col.image(placeholder_image_path, caption=f"{category} (Placeholder)", use_container_width=True)
             else:
                 col.error(f"No image available for {category}")
+            
+            # Add button for navigation
+            if col.button(f"Go to {category}", key=f"button_{normalized_category}"):
+                st.session_state.current_page = category
 
     # News Section
     st.write("### News Section")
