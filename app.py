@@ -287,8 +287,10 @@ else:
         print(f"Total images found: {len(images)}")
         return images
 
+    def normalize_name(name):
+        """Normalize a name to handle underscores, spaces, and case insensitivity."""
+        return name.strip().lower().replace(" ", "_").replace("-", "_")
 
-    # Function to load details for the images from the database
     def load_image_details(file_name):
         """Load additional details for a given image from the database table."""
         query = f"""
@@ -304,7 +306,6 @@ else:
             return {key: value for key, value in details.items() if value != "Unknown"}
         return {}
 
-    # Function to create a PDF with image details
     def create_pdf(images_with_details, output_file):
         pdf = FPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
@@ -326,7 +327,6 @@ else:
         pdf.output(output_file)
 
     # Base image directory
-    # Debugging and verifying BASE_DIR and IMAGE_FOLDER
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     IMAGE_FOLDER = os.path.join(BASE_DIR, "weapon_images_final1")  # Ensure this matches your actual folder structure
     placeholder_image_path = os.path.join(BASE_DIR, "placeholder.jpeg")
@@ -334,15 +334,13 @@ else:
     print(f"Base directory: {BASE_DIR}")
     print(f"Image folder: {IMAGE_FOLDER}")
 
-
     # Normalize category name
     normalized_category_name = normalize_name(current_page)
 
     # Find images for the category
     images = find_images_for_category(IMAGE_FOLDER, current_page)
 
-    normalized_category_name = current_page.replace("+", " ").lower()
-
+    # Remaining part of the code for filtering and displaying images
     # Normalize category names
     data["Normalized_Weapon_Category"] = data["Weapon_Category"].apply(normalize_name)  # Normalize weapon categories
     normalized_current_page = normalize_name(current_page)  # Normalize the current page name
@@ -382,7 +380,8 @@ else:
         available_origins = ["All"]
         selected_year = st.selectbox("Filter by Year", options=available_years)
         selected_origin = st.selectbox("Filter by Origin", options=available_origins)
-# Apply filters to the images
+
+    # Apply filters to the images
     filtered_images = []
     for image_path, file_name in images:
         details = load_image_details(file_name)
@@ -390,8 +389,7 @@ else:
            (selected_origin == "All" or details.get("Origin") == selected_origin):
             filtered_images.append((image_path, file_name, details))
 
-
-     # Display images and their details
+    # Display images and their details
     if filtered_images:
         st.write("### Weapon Images")
         cols_per_row = 4
