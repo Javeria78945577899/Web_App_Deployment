@@ -221,6 +221,12 @@ if st.session_state.current_page == "Home":
 
 # Dynamically Created Pages Based on .toml
 else:
+    import os
+    import pandas as pd
+    from sqlalchemy import create_engine
+    from fpdf import FPDF
+    import streamlit as st
+
     # Dynamically get the current page
     current_page = st.session_state.current_page
 
@@ -237,9 +243,9 @@ else:
             if category.lower() in name.lower():
                 return category
         return "Unknown"
+
     category_name = extract_main_category(current_page)
 
-    current_page = st.session_state.current_page
     # Display the Page Title
     st.title(f"{current_page}")
 
@@ -249,25 +255,18 @@ else:
     # Add description or further dynamic content
     st.write(f"This is the dynamically created page for **{current_page}** under the category **{category_name}**.")
 
-
     # Normalize the category name
     def normalize_name(name):
         """Normalize category names by removing prefixes and handling spaces or special characters."""
         unwanted_prefixes = ["Vehicles", "Infantry_Weapons", "Firearms", "Aviation Subsystems",
                              "Artillery", "Ammunitions", "Aircraft"]
 
-        # Remove unwanted prefixes
         for prefix in unwanted_prefixes:
             if name.lower().startswith(prefix.lower()):
                 name = name[len(prefix):].strip("_")
 
-        # Replace special characters and normalize
         normalized_name = name.lower().replace("+", " ").replace("_", " ").replace("-", " ").strip()
         return normalized_name
-        print(f"Normalized category: {normalize_name(category_name)}")
-        for root in os.walk(base_folder):
-           print(f"Normalized root: {normalize_name(root)}")
-
 
     # Function to find image files matching the category
     def find_images_for_category(base_folder, category_name):
@@ -284,16 +283,20 @@ else:
     # Function to load details for the images from the database
     def load_image_details(file_name):
         """Load additional details for a given image from the database table."""
-        query = f"""
-        SELECT Weapon_Name AS 'Weapon Name', Development AS 'Development Era', Production AS 'Production Era', Origin, 
-               Weapon_Category AS 'Weapon Type', Status, Designations AS 'Designation', Caliber
-        FROM weapon_data1
-        WHERE Downloaded_Image_Name = '{file_name}'
-        """
-        result = pd.read_sql(query, engine)
-        if not result.empty:
-            details = result.iloc[0].dropna().to_dict()  # Drop any columns with NaN values
-            return {key: value for key, value in details.items() if value != "Unknown"}
+        try:
+            query = f"""
+            SELECT Weapon_Name AS 'Weapon Name', Development AS 'Development Era', Production AS 'Production Era', Origin, 
+                   Weapon_Category AS 'Weapon Type', Status, Designations AS 'Designation', Caliber
+            FROM weapon_data1
+            WHERE Downloaded_Image_Name = '{file_name}'
+            """
+            result = pd.read_sql(query, engine)
+            if not result.empty:
+                details = result.iloc[0].dropna().to_dict()  # Drop any columns with NaN values
+                return {key: value for key, value in details.items() if value != "Unknown"}
+        except Exception as e:
+            print(f"Error loading details for {file_name}: {e}")
+            engine.rollback()
         return {}
 
     # Function to create a PDF with image details
@@ -325,57 +328,47 @@ else:
     print(f"Files in IMAGE_FOLDER: {os.listdir(IMAGE_FOLDER)}")
 
     for root, dirs, files in os.walk(IMAGE_FOLDER):
-       print(f"Root: {root}, Dirs: {dirs}, Files: {files}")
+        print(f"Root: {root}, Dirs: {dirs}, Files: {files}")
 
-    
     # Normalize category name
     normalized_category_name = normalize_name(current_page)
 
     # Find images for the category
     images = find_images_for_category(IMAGE_FOLDER, current_page)
 
-    normalized_category_name = current_page.replace("+", " ").lower()
-
-    # Normalize category names
+    # Ensure valid data exists for the current category
     data["Normalized_Weapon_Category"] = data["Weapon_Category"].apply(normalize_name)  # Normalize weapon categories
-    normalized_current_page = normalize_name(current_page)  # Normalize the current page name
+    normalized_current_page = normalize_name(current_page)
 
-    # Extract the category name from the filtered data
     category_filter = data[
         data["Normalized_Weapon_Category"] == normalized_current_page
     ]
 
-    # Ensure valid data exists for the current category
     if not category_filter.empty:
-        # Initial filter options
         available_years = ["All"] + sorted(category_filter["Development"].dropna().unique())
         available_origins = ["All"] + sorted(category_filter["Origin"].dropna().unique())
 
-        # Filters
         st.write("### Filter Options")
         col1, col2 = st.columns(2)
         with col1:
             selected_year = st.selectbox("Filter by Year", options=available_years)
         with col2:
-            # Dynamically adjust origin options based on selected year
             if selected_year != "All":
                 filtered_by_year = category_filter[category_filter["Development"] == selected_year]
                 available_origins = ["All"] + sorted(filtered_by_year["Origin"].dropna().unique())
             selected_origin = st.selectbox("Filter by Origin", options=available_origins)
 
-        # Dynamically adjust year options based on selected origin
         if selected_origin != "All":
             filtered_by_origin = category_filter[category_filter["Origin"] == selected_origin]
             available_years = ["All"] + sorted(filtered_by_origin["Development"].dropna().unique())
-            # Update the year dropdown dynamically
             selected_year = st.selectbox("Filter by Year", options=available_years, index=available_years.index(selected_year) if selected_year in available_years else 0)
     else:
-        # Default filters when no valid data exists
         available_years = ["All"]
         available_origins = ["All"]
         selected_year = st.selectbox("Filter by Year", options=available_years)
         selected_origin = st.selectbox("Filter by Origin", options=available_origins)
- # Apply filters to the images
+
+    # Apply filters to the images
     filtered_images = []
     for image_path, file_name in images:
         details = load_image_details(file_name)
@@ -402,7 +395,6 @@ else:
                         for key, value in details.items():
                             st.write(f"**{key}:** {value}")
 
-        # Add a download button for the PDF
         pdf_file = os.path.join(BASE_DIR, "weapon_images_details.pdf")
         create_pdf([(img[0], img[2]) for img in filtered_images], pdf_file)
         with open(pdf_file, "rb") as f:
@@ -414,4 +406,3 @@ else:
             )
     else:
         st.warning("No images found for the selected filters.")
-    print(f"Resolved path for image: {os.path.abspath(image_path)}")
