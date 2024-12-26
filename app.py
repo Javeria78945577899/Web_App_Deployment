@@ -253,7 +253,7 @@ else:
     # Normalize the category name
    
 
-def normalize_name(name):
+    def normalize_name(name):
         """Normalize a name to handle underscores, spaces, and case insensitivity."""
         return name.strip().lower().replace(" ", "_").replace("-", "_")
 
@@ -265,10 +265,10 @@ def normalize_name(name):
     # Debugging folder normalization
     for root, _, files in os.walk(IMAGE_FOLDER):
         print(f"Normalized folder: {normalize_name(root)}")
-        
+
     base_folder = os.path.join(os.getcwd(), "weapon_images_final1")
 
-   def find_images_for_category(base_folder, category_name):
+    def find_images_for_category(base_folder, category_name):
         """Find all images in a folder matching the normalized category name."""
         normalized_category = normalize_name(category_name)
         images = []
