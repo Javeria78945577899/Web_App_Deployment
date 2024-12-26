@@ -144,6 +144,16 @@ if st.session_state.current_page == "Home":
     
     cols_per_row = 3
     rows = [categories[i:i + cols_per_row] for i in range(0, len(categories), cols_per_row)]
+     # Normalize name function
+    def normalize_name(name):
+        """Normalize category names by removing prefixes and handling spaces or special characters."""
+        unwanted_prefixes = ["Vehicles", "Infantry_Weapons", "Firearms", "Aviation Subsystems",
+                             "Artillery", "Ammunitions", "Aircraft"]
+        for prefix in unwanted_prefixes:
+            if name.lower().startswith(prefix.lower()):
+                name = name[len(prefix):].strip("_")
+        return name.lower().replace(" ", "_").replace("+", "_").replace("-", "_")
+    
 
     for row in rows:
         cols = st.columns(len(row))
