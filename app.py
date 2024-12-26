@@ -264,6 +264,10 @@ else:
         # Replace special characters and normalize
         normalized_name = name.lower().replace("+", " ").replace("_", " ").replace("-", " ").strip()
         return normalized_name
+        print(f"Normalized category: {normalize_name(category_name)}")
+        for root in os.walk(base_folder):
+           print(f"Normalized root: {normalize_name(root)}")
+
 
     # Function to find image files matching the category
     def find_images_for_category(base_folder, category_name):
@@ -315,9 +319,15 @@ else:
 
     # Base image directory
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    IMAGE_FOLDER = os.path.join(BASE_DIR, "..", "weapon_images_final1")
+    IMAGE_FOLDER = os.path.join(BASE_DIR, "weapon_images_final1")
     placeholder_image_path = os.path.join(IMAGE_FOLDER, "placeholder.jpeg")
+    print(f"IMAGE_FOLDER: {IMAGE_FOLDER}")
+    print(f"Files in IMAGE_FOLDER: {os.listdir(IMAGE_FOLDER)}")
 
+    for root, dirs, files in os.walk(IMAGE_FOLDER):
+       print(f"Root: {root}, Dirs: {dirs}, Files: {files}")
+
+    
     # Normalize category name
     normalized_category_name = normalize_name(current_page)
 
@@ -404,3 +414,4 @@ else:
             )
     else:
         st.warning("No images found for the selected filters.")
+    print(f"Resolved path for image: {os.path.abspath(image_path)}")
