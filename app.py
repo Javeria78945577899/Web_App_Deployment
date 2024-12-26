@@ -221,6 +221,7 @@ if st.session_state.current_page == "Home":
 
 # Dynamically Created Pages Based on .toml
 else:
+   else:
     # Dynamically get the current page
     current_page = st.session_state.current_page
 
@@ -251,46 +252,33 @@ else:
 
 
     # Normalize the category name
-   
-
     def normalize_name(name):
-        """Normalize a name to handle underscores, spaces, and case insensitivity."""
-        return name.strip().lower().replace(" ", "_").replace("-", "_")
+        """Normalize category names by removing prefixes and handling spaces or special characters."""
+        unwanted_prefixes = ["Vehicles", "Infantry_Weapons", "Firearms", "Aviation Subsystems",
+                             "Artillery", "Ammunitions", "Aircraft"]
 
-    # Find images for the category
-    normalized_category_name = normalize_name(current_page)
-    print(f"Normalized category: {normalized_category_name}")
-    images = find_images_for_category(IMAGE_FOLDER, current_page)
+        # Remove unwanted prefixes
+        for prefix in unwanted_prefixes:
+            if name.lower().startswith(prefix.lower()):
+                name = name[len(prefix):].strip("_")
 
-    # Debugging folder normalization
-    for root, _, files in os.walk(IMAGE_FOLDER):
-        print(f"Normalized folder: {normalize_name(root)}")
+        # Replace special characters and normalize
+        normalized_name = name.lower().replace("+", " ").replace("_", " ").replace("-", " ").strip()
+        return normalized_name
 
-    base_folder = os.path.join(os.getcwd(), "weapon_images_final1")
-
+    # Function to find image files matching the category
     def find_images_for_category(base_folder, category_name):
         """Find all images in a folder matching the normalized category name."""
         normalized_category = normalize_name(category_name)
         images = []
-
-        print(f"Looking for images in base folder: {base_folder}, category: {normalized_category}")
-
         for root, _, files in os.walk(base_folder):
-            print(f"Checking directory: {root}")
-            normalized_root = normalize_name(root)
-            if normalized_category in normalized_root:
+            if normalized_category in normalize_name(root):
                 for file in files:
                     if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                        full_path = os.path.join(root, file)
-                        print(f"Found image: {full_path}")
-                        images.append((full_path, file))  # Return full path and file name
-        print(f"Total images found: {len(images)}")
+                        images.append((os.path.join(root, file), file))  # Return full path and file name
         return images
 
-    def normalize_name(name):
-        """Normalize a name to handle underscores, spaces, and case insensitivity."""
-        return name.strip().lower().replace(" ", "_").replace("-", "_")
-
+    # Function to load details for the images from the database
     def load_image_details(file_name):
         """Load additional details for a given image from the database table."""
         query = f"""
@@ -300,12 +288,12 @@ else:
         WHERE Downloaded_Image_Name = '{file_name}'
         """
         result = pd.read_sql(query, engine)
-        print(f"Query result for {file_name}: {result}")
         if not result.empty:
             details = result.iloc[0].dropna().to_dict()  # Drop any columns with NaN values
             return {key: value for key, value in details.items() if value != "Unknown"}
         return {}
 
+    # Function to create a PDF with image details
     def create_pdf(images_with_details, output_file):
         pdf = FPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
@@ -328,11 +316,8 @@ else:
 
     # Base image directory
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    IMAGE_FOLDER = os.path.join(BASE_DIR, "weapon_images_final1")  # Ensure this matches your actual folder structure
-    placeholder_image_path = os.path.join(BASE_DIR, "placeholder.jpeg")
-
-    print(f"Base directory: {BASE_DIR}")
-    print(f"Image folder: {IMAGE_FOLDER}")
+    IMAGE_FOLDER = os.path.join(BASE_DIR, "..", "weapon_images_final1")
+    placeholder_image_path = os.path.join(IMAGE_FOLDER, "placeholder.jpeg")
 
     # Normalize category name
     normalized_category_name = normalize_name(current_page)
@@ -340,7 +325,8 @@ else:
     # Find images for the category
     images = find_images_for_category(IMAGE_FOLDER, current_page)
 
-    # Remaining part of the code for filtering and displaying images
+    normalized_category_name = current_page.replace("+", " ").lower()
+
     # Normalize category names
     data["Normalized_Weapon_Category"] = data["Weapon_Category"].apply(normalize_name)  # Normalize weapon categories
     normalized_current_page = normalize_name(current_page)  # Normalize the current page name
@@ -380,8 +366,7 @@ else:
         available_origins = ["All"]
         selected_year = st.selectbox("Filter by Year", options=available_years)
         selected_origin = st.selectbox("Filter by Origin", options=available_origins)
-
-    # Apply filters to the images
+ # Apply filters to the images
     filtered_images = []
     for image_path, file_name in images:
         details = load_image_details(file_name)
