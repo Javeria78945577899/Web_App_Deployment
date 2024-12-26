@@ -135,41 +135,33 @@ if st.session_state.current_page == "Home":
         st.warning("No data available to display.")
 
     # Display Categories with Representative Images
-    # Display Categories with Representative Images
+   # Display Categories with Representative Images
     st.write("### Weapon Categories")
-    
     IMAGE_FOLDER = "weapon_images_final1"
     placeholder_image_path = os.path.join(IMAGE_FOLDER, "placeholder.jpeg")
     categories = sorted(data["Weapon_Category"].dropna().unique())
-    
+
     cols_per_row = 3
     rows = [categories[i:i + cols_per_row] for i in range(0, len(categories), cols_per_row)]
-     # Normalize name function
-    def normalize_name(name):
-        """Normalize category names by removing prefixes and handling spaces or special characters."""
-        unwanted_prefixes = ["Vehicles", "Infantry_Weapons", "Firearms", "Aviation Subsystems",
-                             "Artillery", "Ammunitions", "Aircraft"]
-        for prefix in unwanted_prefixes:
-            if name.lower().startswith(prefix.lower()):
-                name = name[len(prefix):].strip("_")
-        return name.lower().replace(" ", "_").replace("+", "_").replace("-", "_")
-    
+
+    # Function to normalize the category name for the redirection URL
+    def normalize_name_for_url(name):
+        """Normalize category names for URL redirection."""
+        return name.replace(" ", "+").replace("_", "+").title()
 
     for row in rows:
         cols = st.columns(len(row))
         for col, category in zip(cols, row):
-            # Get normalized category name
-            normalized_category = normalize_name(category)
-            
-            # Determine category image
-            category_dir = os.path.join(IMAGE_FOLDER, normalized_category)
+            # Image logic remains the same
+            category_dir = os.path.join(IMAGE_FOLDER, category.replace(" ", "_"))
             category_image = None
-            
+
             if os.path.exists(category_dir) and os.path.isdir(category_dir):
                 for file_name in os.listdir(category_dir):
                     if file_name.lower().endswith((".png", ".jpg", ".jpeg")):
                         category_image = os.path.join(category_dir, file_name)
                         break
+
             # Display image or placeholder
             if category_image and os.path.exists(category_image):
                 col.image(category_image, caption=category, use_container_width=True)
@@ -177,11 +169,14 @@ if st.session_state.current_page == "Home":
                 col.image(placeholder_image_path, caption=f"{category} (Placeholder)", use_container_width=True)
             else:
                 col.error(f"No image available for {category}")
-            
-            # Add button for navigation
-            if col.button(f"Go to {category}", key=f"button_{normalized_category}"):
-                st.session_state.current_page = category
 
+            # Add button for navigation with normalized URL
+            normalized_url = normalize_name_for_url(category)
+            if col.button(f"Go to {category}", key=f"button_{category}"):
+                st.session_state.current_page = normalized_url
+
+
+    
     # News Section
     st.write("### News Section")
 
