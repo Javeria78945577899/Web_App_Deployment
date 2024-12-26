@@ -221,7 +221,6 @@ if st.session_state.current_page == "Home":
 
 # Dynamically Created Pages Based on .toml
 else:
-   else:
     # Dynamically get the current page
     current_page = st.session_state.current_page
 
