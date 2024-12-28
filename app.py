@@ -10,6 +10,7 @@ import os
 import torch
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 from sklearn.preprocessing import LabelEncoder
+import requests
 
 # Database connection details
 DB_HOST = "junction.proxy.rlwy.net"
@@ -41,6 +42,43 @@ def load_data():
     return pd.read_sql(query, engine)
 
 data = load_data()# Load the DistilBERT model and tokenizer
+
+# Load AI Model from Google Drive
+@st.cache_resource
+def load_model():
+    MODEL_URL = "https://drive.google.com/uc?export=download&id=1C449DJGOx6WiD4c-m1gozC3hJGbWA55-"
+    MODEL_PATH = "./bert_weapon_classifier/model.safetensors"
+    if not os.path.exists(MODEL_PATH):
+        os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+        with requests.get(MODEL_URL, stream=True) as r:
+            with open(MODEL_PATH, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+    model = DistilBertForSequenceClassification.from_pretrained("./bert_weapon_classifier")
+    tokenizer = DistilBertTokenizer.from_pretrained("./bert_weapon_classifier")
+    model.eval()
+    return model, tokenizer
+
+distilbert_model, distilbert_tokenizer = load_model()
+
+# Prediction function
+def predict_category(text, model, tokenizer):
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
+    with torch.no_grad():
+        outputs = model(**inputs)
+        predicted_class_idx = torch.argmax(outputs.logits, dim=1).item()
+    return predicted_class_idx
+
+# Load categories from dataset
+@st.cache_data
+def get_label_encoder():
+    categories = pd.read_csv("combined_data_final_with_images.csv")
+    label_encoder = LabelEncoder()
+    label_encoder.fit(categories["Weapon_Category"].unique())
+    return label_encoder
+
+label_encoder = get_label_encoder()
 
 
 # Resolve the directory path
@@ -136,6 +174,21 @@ if st.session_state.current_page == "Home":
         st.dataframe(top_countries_data)
     else:
         st.warning("No data available to display.")
+
+     # AI Integration: Recognized Categories Table
+    st.write("### Recognized Weapon Categories")
+    @st.cache_data
+    def get_recognized_categories():
+        data["Predicted_Category"] = data["Weapon_Name"].apply(
+            lambda x: label_encoder.inverse_transform([predict_category(x, distilbert_model, distilbert_tokenizer)])[0]
+        )
+        recognized_counts = data["Predicted_Category"].value_counts().reset_index()
+        recognized_counts.columns = ["Category", "Count"]
+        return recognized_counts
+
+    recognized_categories = get_recognized_categories()
+    st.table(recognized_categories)
+
 
     # Display Categories with Representative Images
    # Display Categories with Representative Images
