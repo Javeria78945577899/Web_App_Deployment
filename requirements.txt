@@ -8,3 +8,4 @@ toml
 path
 transformers
 torch
+scikit-learn
