@@ -11,6 +11,44 @@ import torch
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 from sklearn.preprocessing import LabelEncoder
 
+# Google Drive file ID for the model file
+FILE_ID = "1C449DJGOx6WiD4c-m1gozC3hJGbWA55-"  # Replace with your actual file ID
+MODEL_PATH = "./bert_weapon_classifier/model.safetensors"
+
+# Function to download the model from Google Drive
+def download_from_google_drive(file_id, destination):
+    URL = "https://drive.google.com/uc?export=download"
+    session = requests.Session()
+    response = session.get(URL, params={"id": file_id}, stream=True)
+    token = get_confirm_token(response)
+
+    if token:
+        params = {"id": file_id, "confirm": token}
+        response = session.get(URL, params=params, stream=True)
+
+    save_response_content(response, destination)
+
+def get_confirm_token(response):
+    for key, value in response.cookies.items():
+        if key.startswith("download_warning"):
+            return value
+    return None
+
+def save_response_content(response, destination):
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(32768):
+            if chunk:  # filter out keep-alive new chunks
+                f.write(chunk)
+
+# Download the model if it doesn't already exist
+if not os.path.exists(MODEL_PATH):
+    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+    st.write("Downloading model file from Google Drive...")
+    download_from_google_drive(FILE_ID, MODEL_PATH)
+    st.write("Model downloaded successfully.")
+
+
+
 # Database connection details
 DB_HOST = "junction.proxy.rlwy.net"
 DB_USER = "root"
@@ -40,12 +78,11 @@ def load_data():
     """
     return pd.read_sql(query, engine)
 
-data = load_data()
+data = load_data()# Load the DistilBERT model and tokenizer
 
-# Load the DistilBERT model and tokenizer
-MODEL_PATH = "./bert_weapon_classifier"  # Adjust the path to your model
-distilbert_model = DistilBertForSequenceClassification.from_pretrained(MODEL_PATH)
-distilbert_tokenizer = DistilBertTokenizer.from_pretrained(MODEL_PATH)
+
+distilbert_model = DistilBertForSequenceClassification.from_pretrained("./bert_weapon_classifier")
+distilbert_tokenizer = DistilBertTokenizer.from_pretrained("./bert_weapon_classifier")
 
 # Set the model to evaluation mode
 distilbert_model.eval()
@@ -83,14 +120,7 @@ if st.button("Predict Weapon Category"):
     else:
         st.warning("Please enter a valid weapon description.")
 
-# Optional: Batch prediction on sample data
-if st.checkbox("Batch Predict on Sample Data"):
-    st.write("Running predictions on sample data...")
-    sample_data = pd.read_csv("combined_data_final_with_images.csv").head(10)
-    sample_data["Predicted_Category"] = sample_data["Weapon_Name"].apply(
-        lambda x: label_encoder.inverse_transform([predict_category(x, distilbert_model, distilbert_tokenizer)])[0]
-    )
-    st.dataframe(sample_data[["Weapon_Name", "Weapon_Category", "Predicted_Category"]])
+
 
 # Resolve the directory path
 current_dir = Path(__file__).resolve().parent  # Use resolve() to get the absolute path
