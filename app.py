@@ -7,6 +7,9 @@ import toml
 from fpdf import FPDF
 from pathlib import Path
 import os
+import torch
+from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
+from sklearn.preprocessing import LabelEncoder
 
 # Database connection details
 DB_HOST = "junction.proxy.rlwy.net"
@@ -39,6 +42,55 @@ def load_data():
 
 data = load_data()
 
+# Load the DistilBERT model and tokenizer
+MODEL_PATH = "./bert_weapon_classifier"  # Adjust the path to your model
+distilbert_model = DistilBertForSequenceClassification.from_pretrained(MODEL_PATH)
+distilbert_tokenizer = DistilBertTokenizer.from_pretrained(MODEL_PATH)
+
+# Set the model to evaluation mode
+distilbert_model.eval()
+
+# Prediction function
+def predict_category(text, model, tokenizer):
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
+    with torch.no_grad():
+        outputs = model(**inputs)
+        predicted_class_idx = torch.argmax(outputs.logits, dim=1).item()
+    return predicted_class_idx
+
+# Load categories from dataset and encode them
+@st.cache_data
+def get_label_encoder():
+    categories = pd.read_csv("combined_data_final_with_images.csv")["Weapon_Category"].unique()
+    label_encoder = LabelEncoder()
+    label_encoder.fit(categories)
+    return label_encoder
+
+label_encoder = get_label_encoder()
+
+# Streamlit app
+st.title("Weapon Categorization with AI")
+
+# User input section
+user_input = st.text_area("Enter Weapon Description (e.g., Weapon Name, Origin, Type):")
+
+# Prediction section
+if st.button("Predict Weapon Category"):
+    if user_input.strip():
+        prediction_idx = predict_category(user_input, distilbert_model, distilbert_tokenizer)
+        predicted_category = label_encoder.inverse_transform([prediction_idx])[0]
+        st.success(f"Predicted Weapon Category: **{predicted_category}**")
+    else:
+        st.warning("Please enter a valid weapon description.")
+
+# Optional: Batch prediction on sample data
+if st.checkbox("Batch Predict on Sample Data"):
+    st.write("Running predictions on sample data...")
+    sample_data = pd.read_csv("combined_data_final_with_images.csv").head(10)
+    sample_data["Predicted_Category"] = sample_data["Weapon_Name"].apply(
+        lambda x: label_encoder.inverse_transform([predict_category(x, distilbert_model, distilbert_tokenizer)])[0]
+    )
+    st.dataframe(sample_data[["Weapon_Name", "Weapon_Category", "Predicted_Category"]])
 
 # Resolve the directory path
 current_dir = Path(__file__).resolve().parent  # Use resolve() to get the absolute path
