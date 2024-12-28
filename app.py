@@ -11,44 +11,6 @@ import torch
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 from sklearn.preprocessing import LabelEncoder
 
-# Google Drive file ID for the model file
-FILE_ID = "1C449DJGOx6WiD4c-m1gozC3hJGbWA55-"  # Replace with your actual file ID
-MODEL_PATH = "./bert_weapon_classifier/model.safetensors"
-
-# Function to download the model from Google Drive
-def download_from_google_drive(file_id, destination):
-    URL = "https://drive.google.com/uc?export=download"
-    session = requests.Session()
-    response = session.get(URL, params={"id": file_id}, stream=True)
-    token = get_confirm_token(response)
-
-    if token:
-        params = {"id": file_id, "confirm": token}
-        response = session.get(URL, params=params, stream=True)
-
-    save_response_content(response, destination)
-
-def get_confirm_token(response):
-    for key, value in response.cookies.items():
-        if key.startswith("download_warning"):
-            return value
-    return None
-
-def save_response_content(response, destination):
-    with open(destination, "wb") as f:
-        for chunk in response.iter_content(32768):
-            if chunk:  # filter out keep-alive new chunks
-                f.write(chunk)
-
-# Download the model if it doesn't already exist
-if not os.path.exists(MODEL_PATH):
-    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-    st.write("Downloading model file from Google Drive...")
-    download_from_google_drive(FILE_ID, MODEL_PATH)
-    st.write("Model downloaded successfully.")
-
-
-
 # Database connection details
 DB_HOST = "junction.proxy.rlwy.net"
 DB_USER = "root"
@@ -79,47 +41,6 @@ def load_data():
     return pd.read_sql(query, engine)
 
 data = load_data()# Load the DistilBERT model and tokenizer
-
-
-distilbert_model = DistilBertForSequenceClassification.from_pretrained("./bert_weapon_classifier")
-distilbert_tokenizer = DistilBertTokenizer.from_pretrained("./bert_weapon_classifier")
-
-# Set the model to evaluation mode
-distilbert_model.eval()
-
-# Prediction function
-def predict_category(text, model, tokenizer):
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
-    with torch.no_grad():
-        outputs = model(**inputs)
-        predicted_class_idx = torch.argmax(outputs.logits, dim=1).item()
-    return predicted_class_idx
-
-# Load categories from dataset and encode them
-@st.cache_data
-def get_label_encoder():
-    categories = pd.read_csv("combined_data_final_with_images.csv")["Weapon_Category"].unique()
-    label_encoder = LabelEncoder()
-    label_encoder.fit(categories)
-    return label_encoder
-
-label_encoder = get_label_encoder()
-
-# Streamlit app
-st.title("Weapon Categorization with AI")
-
-# User input section
-user_input = st.text_area("Enter Weapon Description (e.g., Weapon Name, Origin, Type):")
-
-# Prediction section
-if st.button("Predict Weapon Category"):
-    if user_input.strip():
-        prediction_idx = predict_category(user_input, distilbert_model, distilbert_tokenizer)
-        predicted_category = label_encoder.inverse_transform([prediction_idx])[0]
-        st.success(f"Predicted Weapon Category: **{predicted_category}**")
-    else:
-        st.warning("Please enter a valid weapon description.")
-
 
 
 # Resolve the directory path
