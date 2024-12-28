@@ -6,3 +6,5 @@ plotly
 fpdf
 toml
 path
+transformers
+torch
