@@ -211,7 +211,7 @@ if st.session_state.current_page == "Home":
         image_name = current_news["Downloaded_Image_Name"]
         weapon_category = current_news["Weapon_Category"].replace(" ", "_")  # Use Weapon_Category from the data
         weapon_name = current_news["Weapon_Name"].replace(" ", "_")
-        category_folder = os.path.join(IMAGE_FOLDER, weapon_category, weapon_name)  # Adjusted folder path to include category
+        category_folder = os.path.join(IMAGE_FOLDER, weapon_category, image_name)  # Adjusted folder path to include category
 
         # Normalize filenames for better matching
         def normalize_name(name):
