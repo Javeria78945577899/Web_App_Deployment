@@ -241,16 +241,16 @@ if st.session_state.current_page == "Home":
     else:
         st.write(f"Category folder does not exist: {category_folder}")
 
-# Use placeholder if image path is not found
-if not image_path or not os.path.exists(image_path):
-    image_path = placeholder_image_path
+     # Use placeholder if image path is not found
+    if not image_path or not os.path.exists(image_path):
+        image_path = placeholder_image_path
 
 # Display the news image
-st.image(
+    st.image(
     image_path,
     caption=f"Image for {current_news['Weapon_Name']}",
     use_container_width=True,
-)
+    )
 
     # Display the news description
     st.write(
