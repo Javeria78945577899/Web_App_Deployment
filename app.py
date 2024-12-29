@@ -222,7 +222,6 @@ if st.session_state.current_page == "Home":
                 .replace("_", " ")
                 .replace(".jpg", "")
                 .replace(".jpeg", "")
-                .lstrip("0123456789_")  # Remove numbers and underscores from the start
             )
 
         normalized_image_name = normalize_name(image_name)
