@@ -213,27 +213,44 @@ if st.session_state.current_page == "Home":
         category_folder = os.path.join(IMAGE_FOLDER, weapon_category)
 
         # Normalize filenames for better matching
-        image_name_normalized = image_name.lower().strip()
-        if os.path.exists(category_folder) and os.path.isdir(category_folder):
-            available_files = [f.lower().strip() for f in os.listdir(category_folder)]
-            if image_name_normalized in available_files:
-                image_path = os.path.join(category_folder, image_name)
-            else:
-                st.write(f"Image {image_name} not found in {category_folder}. Using placeholder.")
-        else:
-            st.write(f"Category folder does not exist: {category_folder}")
-
-    # Use placeholder if image path is not found
-    if not image_path or not os.path.exists(image_path):
-        image_path = placeholder_image_path
+        
 
     
-    # Display the news image
-    st.image(
-        image_path,
-        caption=f"Image for {current_news['Weapon_Name']}",
-        use_container_width=True,
-    )
+         # Normalize filenames for better matching
+    def normalize_name(name):
+        # Remove leading numbers and underscores, lowercase, replace "_", and strip extensions
+        return (
+            name.lower()
+            .strip()
+            .replace("_", " ")
+            .replace(".jpg", "")
+            .replace(".jpeg", "")
+            .lstrip("0123456789_")  # Remove numbers and underscores from the start
+        )
+
+    normalized_image_name = normalize_name(image_name)
+    if os.path.exists(category_folder) and os.path.isdir(category_folder):
+        available_files = [normalize_name(f) for f in os.listdir(category_folder)]
+        
+        # Match normalized names
+        matching_file = next((f for f in os.listdir(category_folder) if normalize_name(f) == normalized_image_name), None)
+        if matching_file:
+            image_path = os.path.join(category_folder, matching_file)
+        else:
+            st.write(f"Image {image_name} not found in {category_folder}. Using placeholder.")
+    else:
+        st.write(f"Category folder does not exist: {category_folder}")
+
+# Use placeholder if image path is not found
+if not image_path or not os.path.exists(image_path):
+    image_path = placeholder_image_path
+
+# Display the news image
+st.image(
+    image_path,
+    caption=f"Image for {current_news['Weapon_Name']}",
+    use_container_width=True,
+)
 
     # Display the news description
     st.write(
