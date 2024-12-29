@@ -185,7 +185,7 @@ if st.session_state.current_page == "Home":
     st.write("### News Section")
 
     # Prepare the data for the news
-    news_data = data[["Weapon_Name", "Wepon_Category", "Development", "Weight", "Status", "Downloaded_Image_Name"]].dropna().reset_index(
+    news_data = data[["Weapon_Name", "Weapon_Category", "Development", "Weight", "Status", "Downloaded_Image_Name"]].dropna().reset_index(
         drop=True
     )
     total_news_items = len(news_data)
