@@ -177,7 +177,7 @@ if st.session_state.current_page == "Home":
 
            # Add buttons for navigation with normalized URLs
         for category in page_names[1:]:  # Skip "Home"
-                normalized_url = normalize_name_for_url(category)
+            normalized_url = normalize_name_for_url(category)
             if st.button(f"Go to {category}", key=f"button_{category}"):
             # Set the selected page in session state
                 st.session_state.current_page = category
