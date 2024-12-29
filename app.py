@@ -185,7 +185,7 @@ if st.session_state.current_page == "Home":
     st.write("### News Section")
 
     # Prepare the data for the news
-    news_data = data[["Weapon_Name", "Development", "Weight", "Status", "Downloaded_Image_Name"]].dropna().reset_index(
+    news_data = data[["Weapon_Name", "Wepon_Category", "Development", "Weight", "Status", "Downloaded_Image_Name"]].dropna().reset_index(
         drop=True
     )
     total_news_items = len(news_data)
@@ -209,49 +209,47 @@ if st.session_state.current_page == "Home":
     image_path = None
     if pd.notnull(current_news["Downloaded_Image_Name"]):
         image_name = current_news["Downloaded_Image_Name"]
-        weapon_category = current_news["Weapon_Name"].replace(" ", "_")
-        category_folder = os.path.join(IMAGE_FOLDER, weapon_category)
+        weapon_category = current_news["Weapon_Category"].replace(" ", "_")  # Use Weapon_Category from the data
+        weapon_name = current_news["Weapon_Name"].replace(" ", "_")
+        category_folder = os.path.join(IMAGE_FOLDER, weapon_category, weapon_name)  # Adjusted folder path to include category
 
         # Normalize filenames for better matching
-        
+        def normalize_name(name):
+            # Remove leading numbers and underscores, lowercase, replace "_", and strip extensions
+            return (
+                name.lower()
+                .strip()
+                .replace("_", " ")
+                .replace(".jpg", "")
+                .replace(".jpeg", "")
+                .lstrip("0123456789_")  # Remove numbers and underscores from the start
+            )
 
-    
-         # Normalize filenames for better matching
-    def normalize_name(name):
-        # Remove leading numbers and underscores, lowercase, replace "_", and strip extensions
-        return (
-            name.lower()
-            .strip()
-            .replace("_", " ")
-            .replace(".jpg", "")
-            .replace(".jpeg", "")
-            .lstrip("0123456789_")  # Remove numbers and underscores from the start
-        )
+        normalized_image_name = normalize_name(image_name)
+        if os.path.exists(category_folder) and os.path.isdir(category_folder):
+            available_files = [normalize_name(f) for f in os.listdir(category_folder)]
 
-    normalized_image_name = normalize_name(image_name)
-    if os.path.exists(category_folder) and os.path.isdir(category_folder):
-        available_files = [normalize_name(f) for f in os.listdir(category_folder)]
-        
-        # Match normalized names
-        matching_file = next((f for f in os.listdir(category_folder) if normalize_name(f) == normalized_image_name), None)
-        if matching_file:
-            image_path = os.path.join(category_folder, matching_file)
+            # Match normalized names
+            matching_file = next((f for f in os.listdir(category_folder) if normalize_name(f) == normalized_image_name), None)
+            if matching_file:
+                image_path = os.path.join(category_folder, matching_file)
+            else:
+                st.write(f"Image {image_name} not found in {category_folder}. Using placeholder.")
         else:
-            st.write(f"Image {image_name} not found in {category_folder}. Using placeholder.")
-    else:
-        st.write(f"Category folder does not exist: {category_folder}")
+            st.write(f"Category folder does not exist: {category_folder}")
 
-     # Use placeholder if image path is not found
+    # Use placeholder if image path is not found
     if not image_path or not os.path.exists(image_path):
         image_path = placeholder_image_path
 
-# Display the news image
+    # Display the news image
     st.image(
-    image_path,
-    caption=f"Image for {current_news['Weapon_Name']}",
-    use_container_width=True,
+        image_path,
+        caption=f"Image for {current_news['Weapon_Name']}",
+        use_container_width=True,
     )
 
+    
     # Display the news description
     st.write(
         f"**Here is {current_news['Weapon_Name']}**, developed in **{current_news['Development']}**, "
