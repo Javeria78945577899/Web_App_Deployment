@@ -210,12 +210,13 @@ if st.session_state.current_page == "Home":
     if pd.notnull(current_news["Downloaded_Image_Name"]):
         image_name = current_news["Downloaded_Image_Name"]
         weapon_category = current_news["Weapon_Category"].replace(" ", "_")  # Use Weapon_Category from the data
-        weapon_name = current_news["Weapon_Name"].replace(" ", "_")
-        category_folder = os.path.join(IMAGE_FOLDER, weapon_category, image_name)  # Adjusted folder path to include category
+
+        # Construct the folder path (include the subfolder structure)
+        category_folder = os.path.join(IMAGE_FOLDER, weapon_category)  # Only use Weapon_Category for folder
 
         # Normalize filenames for better matching
         def normalize_name(name):
-            # Remove leading numbers and underscores, lowercase, replace "_", and strip extensions
+            # Remove leading underscores, lowercase, replace "_", and strip extensions
             return (
                 name.lower()
                 .strip()
@@ -224,6 +225,7 @@ if st.session_state.current_page == "Home":
                 .replace(".jpeg", "")
             )
 
+        # Normalized image name (retain numbers)
         normalized_image_name = normalize_name(image_name)
         if os.path.exists(category_folder) and os.path.isdir(category_folder):
             available_files = [normalize_name(f) for f in os.listdir(category_folder)]
