@@ -175,12 +175,17 @@ if st.session_state.current_page == "Home":
             else:
                 col.error(f"No image available for {category}")
 
-            # Add button for navigation with normalized URL
-            normalized_url = normalize_name_for_url(category)
-            if col.button(f"Go to {category}", key=f"button_{category}"):
-                st.session_state.current_page = normalized_url
-
-
+           # Add buttons for navigation with normalized URLs
+        for category in page_names[1:]:  # Skip "Home"
+                normalized_url = normalize_name_for_url(category)
+            if st.button(f"Go to {category}", key=f"button_{category}"):
+            # Set the selected page in session state
+                st.session_state.current_page = category
+            
+            # Redirect to the URL
+                target_url = f"https://webappdeployment-3rrfzs6mrq3zhwpvgsp2xs.streamlit.app/?page={normalized_url}"
+                st.experimental_set_query_params(page=normalized_url)
+                st.write(f"Redirecting to: {target_url}")
     
     st.write("### News Section")
 
