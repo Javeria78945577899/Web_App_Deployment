@@ -182,7 +182,6 @@ if st.session_state.current_page == "Home":
 
 
     
-    # News Section
     st.write("### News Section")
 
     # Prepare the data for the news
@@ -213,12 +212,22 @@ if st.session_state.current_page == "Home":
         weapon_category = current_news["Weapon_Name"].replace(" ", "_")
         category_folder = os.path.join(IMAGE_FOLDER, weapon_category)
 
+        # Normalize filenames for better matching
+        image_name_normalized = image_name.lower().strip()
         if os.path.exists(category_folder) and os.path.isdir(category_folder):
-            image_path = os.path.join(category_folder, image_name)
+            available_files = [f.lower().strip() for f in os.listdir(category_folder)]
+            if image_name_normalized in available_files:
+                image_path = os.path.join(category_folder, image_name)
+            else:
+                st.write(f"Image {image_name} not found in {category_folder}. Using placeholder.")
+        else:
+            st.write(f"Category folder does not exist: {category_folder}")
 
-    if not image_path or not os.path.exists(image_path):  # Use placeholder if image not found
+    # Use placeholder if image path is not found
+    if not image_path or not os.path.exists(image_path):
         image_path = placeholder_image_path
 
+    
     # Display the news image
     st.image(
         image_path,
