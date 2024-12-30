@@ -154,6 +154,13 @@ if st.session_state.current_page == "Home":
         """Normalize category names for URL redirection."""
         return name.replace(" ", "+").replace("_", "+").title()
 
+    # Function to clean up the category name for button labels
+    def clean_category_name(name):
+        parts = name.split("_")
+        cleaned_name = " ".join(parts[1:]).title()
+        return cleaned_name
+
+
     for row in rows:
         cols = st.columns(len(row))
         for col, category in zip(cols, row):
@@ -170,6 +177,18 @@ if st.session_state.current_page == "Home":
             # Display image or placeholder
             if category_image and os.path.exists(category_image):
                 col.image(category_image, caption=category, use_container_width=True)
+                with col:
+                    with open(category_image, "rb") as file:
+                      col.download_button(
+                        label="Download as PNG",
+                        data=file,
+                        file_name=os.path.basename(category_image),
+                        mime="image/png"
+                    )
+                # Add navigation button
+                cleaned_name = clean_category_name(category)
+                col.button(f"Go to {cleaned_name} Category")
+                
             elif os.path.exists(placeholder_image_path):
                 col.image(placeholder_image_path, caption=f"{category} (Placeholder)", use_container_width=True)
             else:
