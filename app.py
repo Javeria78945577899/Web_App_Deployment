@@ -278,71 +278,7 @@ if st.session_state.current_page == "Home":
     with col3:
         if st.button("➡️ Next"):
             next_news()
-    # Function to generate PDF
-    def generate_pdf(data, news_data, top_countries_data, IMAGE_FOLDER):
-        pdf = FPDF()
-        pdf.set_auto_page_break(auto=True, margin=15)
-
-        # Add a title page
-        pdf.add_page()
-        pdf.set_font("Arial", size=16, style="B")
-        pdf.cell(200, 10, txt="Weapon Insights Dashboard Report", ln=True, align="C")
-
-        # Section 1: Filtered Data Table
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt="Filtered Data Table", ln=True, align="L")
-        for index, row in data.iterrows():
-            pdf.cell(0, 10, txt=str(row.to_dict()), ln=True)
-
-        # Section 2: Threat Distribution by Origin
-        pdf.add_page()
-        pdf.cell(200, 10, txt="Threat Distribution by Origin", ln=True, align="L")
-        pdf.cell(0, 10, txt="See visualization in the app.", ln=True)
-
-        # Section 3: Top 5 Countries
-        pdf.add_page()
-        pdf.cell(200, 10, txt="Top 5 Countries by Weapon Production", ln=True, align="L")
-        for index, row in top_countries_data.iterrows():
-            pdf.cell(0, 10, txt=f"{row['Origin']}: {row['Weapon_Count']} weapons", ln=True)
-
-        # Section 4: Weapon Categories
-        pdf.add_page()
-        pdf.cell(200, 10, txt="Weapon Categories", ln=True, align="L")
-        categories = sorted(data["Weapon_Category"].dropna().unique())
-        for category in categories:
-            pdf.cell(0, 10, txt=f"Category: {category}", ln=True)
-
-        # Section 5: News Section
-        pdf.add_page()
-        pdf.cell(200, 10, txt="News Section", ln=True, align="L")
-        for index, news in news_data.iterrows():
-            pdf.cell(0, 10, txt=f"Weapon: {news['Weapon_Name']}", ln=True)
-            pdf.cell(0, 10, txt=f"Development: {news['Development']}", ln=True)
-            pdf.cell(0, 10, txt=f"Weight: {news['Weight']}", ln=True)
-            pdf.cell(0, 10, txt=f"Status: {news['Status']}", ln=True)
-            # Add image if available
-            image_path = os.path.join(IMAGE_FOLDER, news['Downloaded_Image_Name'])
-            if os.path.exists(image_path):
-                pdf.image(image_path, x=10, y=pdf.get_y(), w=100)
-            pdf.ln(20)  # Add space between news items
-
-        # Save the PDF to a file
-        pdf_output_path = "weapon_insights_report.pdf"
-        pdf.output(pdf_output_path)
-        return pdf_output_path
-
-    # Button to generate and download the PDF
-    if st.button("Generate PDF Report"):
-        pdf_file = generate_pdf(data, news_data, top_countries_data, IMAGE_FOLDER)
-        with open(pdf_file, "rb") as f:
-            st.download_button(
-                label="Download PDF",
-                data=f,
-                file_name="Weapon_Insights_Report.pdf",
-                mime="application/pdf"
-            )
-
+   
 
 # Dynamically Created Pages Based on .toml
 else:
