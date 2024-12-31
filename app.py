@@ -191,9 +191,8 @@ if st.session_state.current_page == "Home":
                 cleaned_name = clean_category_name(category)
                 if col.button(f"Go to {cleaned_name} Category"):
                     # Set the query parameter to navigate to the correct page
-                    st.experimental_set_query_params(page=cleaned_name)
                     st.session_state.current_page = cleaned_name
-
+                    st.experimental_rerun()
                 
                 
             elif os.path.exists(placeholder_image_path):
