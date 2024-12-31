@@ -139,6 +139,29 @@ if st.session_state.current_page == "Home":
     else:
         st.warning("No data available to display.")
 
+     # Weapon Categories by Origin (New Graph)
+    if not top_countries_data.empty:
+        st.write("### Weapon Categories by Origin")
+        weapon_origin_distribution = (
+            data.groupby(["Origin", "Weapon_Category"])
+            .size()
+            .reset_index(name="Count")
+        )
+        fig = px.bar(
+            weapon_origin_distribution,
+            x="Origin",
+            y="Count",
+            color="Weapon_Category",
+            title="Distribution of Weapon Categories by Origin",
+            labels={"Origin": "Country of Origin", "Count": "Number of Weapons"},
+            barmode="stack",
+            color_discrete_sequence=px.colors.sequential.Viridis,
+        )
+        st.plotly_chart(fig)
+    else:
+        st.warning("No data available for visualization.")
+
+
    # 1. Weapon Production Over Time
     st.write("### Weapon Production Over Time")
     if not data.empty:
@@ -197,21 +220,7 @@ if st.session_state.current_page == "Home":
     # Apply the function to the Caliber column
     data['Cleaned_Caliber'] = data['Caliber'].apply(clean_caliber_column)
 
-    # 2. Top Weapon Types by Caliber
-    st.write("### Top Weapon Types by Caliber")
-    if not data.empty:
-        if 'Cleaned_Caliber' in data.columns and data['Cleaned_Caliber'].notna().any():
-            fig = px.bar(
-                data,
-                x="Cleaned_Caliber",
-                y="Weapon_Name",
-                color="Weapon_Category",
-                title="Top Weapon Types by Caliber",
-                labels={"Weapon_Name": "Weapon Count", "Cleaned_Caliber": "Caliber Type"},
-            )
-            st.plotly_chart(fig)
-        else:
-            st.warning("No valid caliber data available for visualization.")
+    
     else:
         st.warning("No data available for visualization.")
 
