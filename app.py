@@ -13,6 +13,7 @@ from sklearn.preprocessing import LabelEncoder
 import requests
 import zipfile
 import re
+import matplotlib.pyplot as plt
 
 # Database connection details
 DB_HOST = "junction.proxy.rlwy.net"
