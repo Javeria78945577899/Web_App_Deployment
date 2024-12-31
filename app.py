@@ -139,6 +139,51 @@ if st.session_state.current_page == "Home":
     else:
         st.warning("No data available to display.")
 
+   # 1. Weapon Production Over Time
+    st.write("### Weapon Production Over Time")
+    if not data.empty:
+        fig = px.line(
+            data,
+            x="Production",
+            y="Weapon_Name",
+            color="Weapon_Category",
+            title="Weapon Production Over Time",
+            labels={"Weapon_Name": "Number of Weapons", "Production": "Production Year Range"},
+        )
+        st.plotly_chart(fig)
+    else:
+        st.warning("No data available for visualization.")
+
+    # 2. Weapon Categories by Status
+    st.write("### Weapon Categories by Status")
+    if not data.empty:
+        fig = px.sunburst(
+            data,
+            path=["Status", "Weapon_Category", "Weapon_Name"],
+            values="Weight",
+            color="Status",
+            title="Distribution of Weapon Categories by Status",
+            labels={"Status": "Weapon Status", "Weight": "Weight (kg)"},
+        )
+        st.plotly_chart(fig)
+    else:
+        st.warning("No data available for visualization.")
+
+    # 3. Top Weapon Types by Caliber
+    st.write("### Top Weapon Types by Caliber")
+    if not data.empty:
+        fig = px.bar(
+            data,
+            x="Caliber",
+            y="Weapon_Name",
+            color="Weapon_Category",
+            title="Top Weapon Types by Caliber",
+            labels={"Weapon_Name": "Weapon Count", "Caliber": "Caliber Type"},
+        )
+        st.plotly_chart(fig)
+    else:
+        st.warning("No data available for visualization.")
+
 
 
     # Display Categories with Representative Images
