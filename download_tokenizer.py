@@ -7,6 +7,7 @@ def download_file_from_google_drive(id, destination):
     """
     URL = "https://drive.google.com/uc?export=download"
 
+    print(f"Attempting to download file with ID: {id}")
     with requests.Session() as session:
         response = session.get(URL, params={"id": id}, stream=True)
         for key, value in response.cookies.items():
@@ -15,9 +16,12 @@ def download_file_from_google_drive(id, destination):
                 break
 
         with open(destination, "wb") as f:
+            print(f"Writing to {destination}...")
             for chunk in response.iter_content(chunk_size=32768):
                 if chunk:
                     f.write(chunk)
+
+    print(f"Download completed: {destination}")
 
 if __name__ == "__main__":
     # Set the Google Drive file ID and destination path
@@ -31,4 +35,9 @@ if __name__ == "__main__":
     # Download the file
     print(f"Downloading the file to {output_path}...")
     download_file_from_google_drive(file_id, output_path)
-    print("Download complete!")
+
+    # Verify if the file exists
+    if os.path.exists(output_path):
+        print(f"The file was downloaded successfully at: {output_path}")
+    else:
+        print("File download failed!")
