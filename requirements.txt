@@ -9,4 +9,5 @@ path
 transformers
 torch
 scikit-learn
-
+requests
+os
