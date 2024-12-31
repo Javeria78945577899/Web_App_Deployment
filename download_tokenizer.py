@@ -23,9 +23,9 @@ def download_file_from_google_drive(id, destination):
 
 if __name__ == "__main__":
     # Set the Google Drive file ID and destination path
-    file_id = "1C449DJGOx6WiD4c-m1gozC3hJGbWA55-"  # Replace with your actual file's ID
+    file_id = "1C449DJGOx6WiD4c-m1gozC3hJGbWA55-"  # Replace with your file's ID
     output_dir = "./bert_weapon_classifier"
-    output_path = os.path.join(output_dir, "model.safetensors")  # Saving as 'model.safetensors'
+    output_path = os.path.join(output_dir, "model.safetensors")
 
     # Ensure the directory exists
     os.makedirs(output_dir, exist_ok=True)
