@@ -220,10 +220,6 @@ if st.session_state.current_page == "Home":
     # Apply the function to the Caliber column
     data['Cleaned_Caliber'] = data['Caliber'].apply(clean_caliber_column)
 
-    
-    else:
-        st.warning("No data available for visualization.")
-
 
 
     # Display Categories with Representative Images
