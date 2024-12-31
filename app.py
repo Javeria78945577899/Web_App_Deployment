@@ -189,7 +189,12 @@ if st.session_state.current_page == "Home":
                     )
                 # Add navigation button
                 cleaned_name = clean_category_name(category)
-                col.button(f"Go to {cleaned_name} Category")
+                if col.button(f"Go to {cleaned_name} Category"):
+                    # Set the query parameter to navigate to the correct page
+                    st.experimental_set_query_params(page=cleaned_name)
+                    st.session_state.current_page = cleaned_name
+
+                
                 
             elif os.path.exists(placeholder_image_path):
                 col.image(placeholder_image_path, caption=f"{category} (Placeholder)", use_container_width=True)
