@@ -10,4 +10,3 @@ transformers
 torch
 scikit-learn
 requests
-os
