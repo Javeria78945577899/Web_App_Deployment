@@ -87,7 +87,7 @@ if st.session_state.current_page == "Home":
     st.dataframe(data)
 
    # Filter the data to exclude origins starting with "source: "
-    filtered_data = data[~data['Origin'].str.startswith('source: ', na=False)]
+    filtered_data = data[~data['Origin'].str.startswith('Source:', na=False)]
 
     # Threat Distribution by Origin
     st.write("### Threat Distribution by Origin")
