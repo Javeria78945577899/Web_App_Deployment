@@ -192,7 +192,6 @@ if st.session_state.current_page == "Home":
                 if col.button(f"Go to {cleaned_name} Category"):
                     # Set the query parameter to navigate to the correct page
                     st.session_state["current_page"] = cleaned_name
-                    st.session_state["page_selector"] = cleaned_name
                     st.experimental_set_query_params(page=cleaned_name)
                 
                 
