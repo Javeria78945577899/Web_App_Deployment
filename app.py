@@ -104,7 +104,7 @@ if st.session_state.current_page == "Home":
     st.write("### Heatmap: Predicted vs Actual Categories")
     if not predicted_data.empty:
         # Generate a confusion matrix
-        confusion_matrix = pd.crosstab(predicted_data['Weapon_Category'], predicted_data['Predicted_Category'])
+        confusion_matrix = pd.crosstab(predicted_data['Weapon_Category'], predicted_data['Predicted Category'])
 
         # Plot the heatmap
         fig, ax = plt.subplots(figsize=(10, 8))
@@ -120,7 +120,7 @@ if st.session_state.current_page == "Home":
     st.write("### Prediction Accuracy and Statistics")
     if not predicted_data.empty:
         # Calculate accuracy
-        correct_predictions = np.sum(predicted_data['Weapon_Category'] == predicted_data['Predicted_Category'])
+        correct_predictions = np.sum(predicted_data['Weapon_Category'] == predicted_data['Predicted Category'])
         total_predictions = len(predicted_data)
         accuracy = (correct_predictions / total_predictions) * 100
 
@@ -128,7 +128,7 @@ if st.session_state.current_page == "Home":
         category_stats = predicted_data.groupby('Weapon_Category').apply(
             lambda x: pd.Series({
                 "Total": len(x),
-                "Correct": np.sum(x['Weapon_Category'] == x['Predicted_Category']),
+                "Correct": np.sum(x['Weapon_Category'] == x['Predicted Category']),
             })
         ).reset_index()
 
