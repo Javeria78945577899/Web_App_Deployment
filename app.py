@@ -14,6 +14,7 @@ import requests
 import zipfile
 import re
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Database connection details
 DB_HOST = "junction.proxy.rlwy.net"
