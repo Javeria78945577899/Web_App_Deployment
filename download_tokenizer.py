@@ -21,13 +21,11 @@ def download_file_from_google_drive(id, destination):
                 if chunk:
                     f.write(chunk)
 
-    print(f"Download completed: {destination}")
-
 if __name__ == "__main__":
     # Set the Google Drive file ID and destination path
-    file_id = "1C449DJGOx6WiD4c-m1gozC3hJGbWA55-"  # Replace with your file's ID
+    file_id = "1C449DJGOx6WiD4c-m1gozC3hJGbWA55-"  # Replace with your actual file's ID
     output_dir = "./bert_weapon_classifier"
-    output_path = os.path.join(output_dir, "tokenizer_file")
+    output_path = os.path.join(output_dir, "model.safetensors")  # Saving as 'model.safetensors'
 
     # Ensure the directory exists
     os.makedirs(output_dir, exist_ok=True)
@@ -35,9 +33,4 @@ if __name__ == "__main__":
     # Download the file
     print(f"Downloading the file to {output_path}...")
     download_file_from_google_drive(file_id, output_path)
-
-    # Verify if the file exists
-    if os.path.exists(output_path):
-        print(f"The file was downloaded successfully at: {output_path}")
-    else:
-        print("File download failed!")
+    print("Download complete!")
