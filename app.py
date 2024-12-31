@@ -11,6 +11,8 @@ import torch
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 from sklearn.preprocessing import LabelEncoder
 import requests
+import zipfile
+
 
 # Database connection details
 DB_HOST = "junction.proxy.rlwy.net"
@@ -159,7 +161,7 @@ if st.session_state.current_page == "Home":
         parts = name.split("_")
         cleaned_name = " ".join(parts[1:]).title()
         return cleaned_name
-
+   
 
     for row in rows:
         cols = st.columns(len(row))
@@ -206,7 +208,7 @@ if st.session_state.current_page == "Home":
     # State to keep track of the current news index
     if "news_index" not in st.session_state:
         st.session_state.news_index = 0
-
+    
     # Function to move to the next news item
     def next_news():
         st.session_state.news_index = (st.session_state.news_index + 1) % total_news_items
@@ -214,6 +216,52 @@ if st.session_state.current_page == "Home":
     # Function to move to the previous news item
     def prev_news():
         st.session_state.news_index = (st.session_state.news_index - 1) % total_news_items
+
+
+    def generate_single_news_pdf(news_item, image_path):
+     pdf = FPDF()
+     pdf.set_auto_page_break(auto=True, margin=15)
+     pdf.add_page()
+
+     # Add the title
+     pdf.set_font("Arial", size=16, style="B")
+     pdf.cell(0, 10, f"News: {news_item['Weapon_Name']}", ln=True, align="C")
+     pdf.ln(10)
+
+     # Add the image
+     if image_path and os.path.exists(image_path):
+         pdf.image(image_path, x=10, y=pdf.get_y(), w=100)
+         pdf.ln(50)
+
+     # Add the details
+     pdf.set_font("Arial", size=12)
+     for key in ["Weapon_Name", "Weapon_Category", "Development", "Weight", "Status"]:
+         pdf.cell(0, 10, f"{key.replace('_', ' ')}: {news_item[key]}", ln=True)
+
+     # Save the PDF
+     pdf_output_path = f"{news_item['Weapon_Name']}_news.pdf"
+     pdf.output(pdf_output_path)
+     return pdf_output_path
+       
+
+    def generate_all_news_zip(news_data, image_folder):
+     zip_filename = "news_section.zip"
+     with zipfile.ZipFile(zip_filename, "w") as zipf:
+         for _, news_item in news_data.iterrows():
+             # Find the image path
+             image_path = None
+             if pd.notnull(news_item["Downloaded_Image_Name"]):
+                 image_name = news_item["Downloaded_Image_Name"]
+                 weapon_category = news_item["Weapon_Category"].replace(" ", "_")
+                 category_folder = os.path.join(image_folder, weapon_category)
+                 image_path = os.path.join(category_folder, image_name) if os.path.exists(category_folder) else None
+
+             # Generate PDF for each news item
+             pdf_path = generate_single_news_pdf(news_item, image_path)
+             zipf.write(pdf_path, os.path.basename(pdf_path))
+             os.remove(pdf_path)  # Clean up temporary PDF files
+
+     return zip_filename
 
     # Display the current news item
     current_news = news_data.iloc[st.session_state.news_index]
@@ -278,7 +326,30 @@ if st.session_state.current_page == "Home":
     with col3:
         if st.button("➡️ Next"):
             next_news()
-   
+       # Button to download the current news item
+    with col2:
+        if st.button("Download Current News as PDF"):
+            pdf_path = generate_single_news_pdf(current_news, image_path)
+            with open(pdf_path, "rb") as f:
+                st.download_button(
+                    label="Download Current News",
+                    data=f,
+                    file_name=os.path.basename(pdf_path),
+                    mime="application/pdf"
+                )
+            os.remove(pdf_path)  # Clean up temporary file
+
+    # Button to download all news items
+    if st.button("Download All News as ZIP"):
+        zip_path = generate_all_news_zip(news_data, IMAGE_FOLDER)
+        with open(zip_path, "rb") as f:
+            st.download_button(
+                label="Download Complete News Section",
+                data=f,
+                file_name=os.path.basename(zip_path),
+                mime="application/zip"
+            )
+        os.remove(zip_path)  # Clean up temporary file
 
 # Dynamically Created Pages Based on .toml
 else:
