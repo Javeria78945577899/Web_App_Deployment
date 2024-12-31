@@ -154,7 +154,7 @@ if st.session_state.current_page == "Home":
     else:
         st.warning("No data available for visualization.")
 
-    else:
+  
     # Define a function to clean and extract numeric weights
     def clean_weight_column(weight):
         """Extract the first numeric value from the weight string, if available."""
