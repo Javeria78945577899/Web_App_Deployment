@@ -9,3 +9,4 @@ path
 transformers
 torch
 scikit-learn
+zipfile
