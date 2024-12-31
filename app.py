@@ -86,11 +86,14 @@ if st.session_state.current_page == "Home":
     st.write("### Filtered Data Table")
     st.dataframe(data)
 
+   # Filter the data to exclude origins starting with "source: "
+    filtered_data = data[~data['Origin'].str.startswith('source: ', na=False)]
+
     # Threat Distribution by Origin
     st.write("### Threat Distribution by Origin")
-    if not data.empty:
+    if not filtered_data.empty:
         fig = px.bar(
-            data,
+            filtered_data,
             x="Origin",
             y="Weapon_Name",
             color="Weapon_Category",
@@ -101,6 +104,7 @@ if st.session_state.current_page == "Home":
     else:
         st.warning("No data available for visualization.")
 
+    
     # Load Top 5 Countries Data
     @st.cache_data
     def load_top_countries():
@@ -139,11 +143,17 @@ if st.session_state.current_page == "Home":
     else:
         st.warning("No data available to display.")
 
-     # Weapon Categories by Origin (New Graph)
+    
+
+    # Weapon Categories by Origin (New Graph)
+    top_countries_data = (
+        filtered_data.groupby("Origin").size().reset_index(name="Weapon_Count")
+    )
+
     if not top_countries_data.empty:
         st.write("### Weapon Categories by Origin")
         weapon_origin_distribution = (
-            data.groupby(["Origin", "Weapon_Category"])
+            filtered_data.groupby(["Origin", "Weapon_Category"])
             .size()
             .reset_index(name="Count")
         )
@@ -160,6 +170,8 @@ if st.session_state.current_page == "Home":
         st.plotly_chart(fig)
     else:
         st.warning("No data available for visualization.")
+
+    
 
 
    # 1. Weapon Production Over Time
