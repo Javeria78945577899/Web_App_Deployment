@@ -189,10 +189,8 @@ if st.session_state.current_page == "Home":
                     )
                 # Add navigation button
                 cleaned_name = clean_category_name(category)
-                if col.button(f"Go to {cleaned_name} Category"):
-                    # Set the query parameter to navigate to the correct page
-                    st.session_state["current_page"] = cleaned_name
-                    st.experimental_set_query_params(page=cleaned_name)
+                col.text_area(f"Go to {cleaned_name} Category through navigation bar",cleaned_name, height=50, disabled=True)
+                    
                 
                 
             elif os.path.exists(placeholder_image_path):
