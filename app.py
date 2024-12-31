@@ -12,7 +12,7 @@ from transformers import DistilBertForSequenceClassification, DistilBertTokenize
 from sklearn.preprocessing import LabelEncoder
 import requests
 import zipfile
-
+import re
 
 # Database connection details
 DB_HOST = "junction.proxy.rlwy.net"
@@ -154,35 +154,68 @@ if st.session_state.current_page == "Home":
     else:
         st.warning("No data available for visualization.")
 
+     # Function to clean the 'Weight' column to extract numeric values
+    def clean_weight_column(weight):
+        if isinstance(weight, str):
+            # Extract the first numeric value from the string
+            match = re.search(r"[\d\.]+", weight)
+            return float(match.group()) if match else None
+        return weight
+
+    # Apply the cleaning function to the 'Weight' column
+    data['Cleaned_Weight'] = data['Weight'].apply(clean_weight_column)
+
     # 2. Weapon Categories by Status
     st.write("### Weapon Categories by Status")
     if not data.empty:
-        fig = px.sunburst(
-            data,
-            path=["Status", "Weapon_Category", "Weapon_Name"],
-            values="Weight",
-            color="Status",
-            title="Distribution of Weapon Categories by Status",
-            labels={"Status": "Weapon Status", "Weight": "Weight (kg)"},
-        )
-        st.plotly_chart(fig)
+        try:
+            fig = px.sunburst(
+                data,
+                path=["Status", "Weapon_Category", "Weapon_Name"],
+                values="Cleaned_Weight",  # Use the cleaned weight column
+                color="Status",
+                title="Distribution of Weapon Categories by Status",
+                labels={"Status": "Weapon Status", "Cleaned_Weight": "Weight (kg)"},
+            )
+            st.plotly_chart(fig)
+        except Exception as e:
+            st.error(f"Error creating sunburst chart: {e}")
     else:
         st.warning("No data available for visualization.")
+
+
+     # Define a function to clean the Caliber column
+    def clean_caliber_column(value):
+        """Extract numeric part from the Caliber column."""
+        try:
+            # Extract only the numeric part (e.g., '9x19mm' -> '9')
+            numeric_part = ''.join(char for char in value if char.isdigit() or char == '.')
+            return float(numeric_part) if numeric_part else None
+        except Exception as e:
+            return None
+
+    # Apply cleaning function to the Caliber column
+    if "Caliber" in data.columns:
+        data["Cleaned_Caliber"] = data["Caliber"].apply(clean_caliber_column)
 
     # 3. Top Weapon Types by Caliber
     st.write("### Top Weapon Types by Caliber")
     if not data.empty:
-        fig = px.bar(
-            data,
-            x="Caliber",
-            y="Weapon_Name",
-            color="Weapon_Category",
-            title="Top Weapon Types by Caliber",
-            labels={"Weapon_Name": "Weapon Count", "Caliber": "Caliber Type"},
-        )
-        st.plotly_chart(fig)
+        try:
+            fig = px.bar(
+                data,
+                x="Cleaned_Caliber",
+                y="Weapon_Name",
+                color="Weapon_Category",
+                title="Top Weapon Types by Caliber",
+                labels={"Weapon_Name": "Weapon Count", "Cleaned_Caliber": "Caliber (Cleaned)"},
+            )
+            st.plotly_chart(fig)
+        except Exception as e:
+            st.error(f"Error creating the chart: {e}")
     else:
         st.warning("No data available for visualization.")
+
 
 
 
