@@ -89,6 +89,69 @@ if st.session_state.current_page == "Home":
    # Filter the data to exclude origins starting with "source: "
     filtered_data = data[~data['Origin'].str.startswith('Source:', na=False)]
 
+    # Analysis and Visualization of predicted_weapon_data table
+    st.title("AI Prediction Analysis")
+
+    # Load the predicted_weapon_data table from the database
+    @st.cache_data
+    def load_predicted_data():
+        query = "SELECT * FROM predicted_weapon_data"
+        return pd.read_sql(query, engine)
+
+    predicted_data = load_predicted_data()
+
+    # Heatmap Visualization
+    st.write("### Heatmap: Predicted vs Actual Categories")
+    if not predicted_data.empty:
+        # Generate a confusion matrix
+        confusion_matrix = pd.crosstab(predicted_data['Weapon_Category'], predicted_data['Predicted_Category'])
+
+        # Plot the heatmap
+        fig, ax = plt.subplots(figsize=(10, 8))
+        sns.heatmap(confusion_matrix, annot=True, fmt="d", cmap="Blues", ax=ax)
+        ax.set_title("Confusion Matrix: Predicted vs Actual Categories")
+        ax.set_xlabel("Predicted Category")
+        ax.set_ylabel("Actual Category")
+        st.pyplot(fig)
+    else:
+        st.warning("No predicted data available for visualization.")
+
+    # Accuracy and Stats
+    st.write("### Prediction Accuracy and Statistics")
+    if not predicted_data.empty:
+        # Calculate accuracy
+        correct_predictions = np.sum(predicted_data['Weapon_Category'] == predicted_data['Predicted_Category'])
+        total_predictions = len(predicted_data)
+        accuracy = (correct_predictions / total_predictions) * 100
+
+        # Group by categories to show correct/total predictions
+        category_stats = predicted_data.groupby('Weapon_Category').apply(
+            lambda x: pd.Series({
+                "Total": len(x),
+                "Correct": np.sum(x['Weapon_Category'] == x['Predicted_Category']),
+            })
+        ).reset_index()
+
+        category_stats['Accuracy (%)'] = (category_stats['Correct'] / category_stats['Total']) * 100
+
+        # Display stats
+        st.write(f"**Overall Accuracy:** {accuracy:.2f}%")
+        st.write("### Prediction Statistics by Category")
+        st.dataframe(category_stats)
+
+        # Optional: Bar chart of category-level accuracy
+        fig = px.bar(
+            category_stats,
+            x="Weapon_Category",
+            y="Accuracy (%)",
+            title="Accuracy by Weapon Category",
+            labels={"Weapon_Category": "Weapon Category", "Accuracy (%)": "Accuracy (%)"},
+        )
+        st.plotly_chart(fig)
+    else:
+        st.warning("No predicted data available for analysis.")
+
+
     # Threat Distribution by Origin
     st.write("### Threat Distribution by Origin")
     if not filtered_data.empty:
