@@ -64,12 +64,12 @@ icon = "🔫"
 path = "Pages/Ammunitions_Firearms ammunition.py"
 
 [[pages]]
-name = "Surface to Air Missiles"
+name = "Surface to Air Missile"
 icon = "🚀"
 path = "Pages/Ammunitions_Surface to air missile.py"
 
 [[pages]]
-name = "Surface to Surface Missiles"
+name = "Surface to Surface Missile"
 icon = "🚀"
 path = "Pages/Ammunitions_Surface to surface missile.py"
 
@@ -79,7 +79,7 @@ icon = "💣"
 path = "Pages/artillery_Anti-tank_gun.py"
 
 [[pages]]
-name = "Coastal Defense Systems"
+name = "Coastal Defense System"
 icon = "🌊"
 path = "Pages/Artillery_coastal_defense_system.py"
 
@@ -104,7 +104,7 @@ icon = "🚛"
 path = "Pages/artillery_Self_propelled_mortar.py"
 
 [[pages]]
-name = "Tactical Missile Systems"
+name = "Tactical Missile System"
 icon = "🎯"
 path = "Pages/artillery_Tactical_missile_system.py"
 
@@ -114,22 +114,22 @@ icon = "🚜"
 path = "Pages/artillery_Towed_howitzer.py"
 
 [[pages]]
-name = "Air to Air Missiles"
+name = "Air to Air Missile"
 icon = "🚀"
 path = "Pages/Aviation_subsystems_Air_to_air_missile.py"
 
 [[pages]]
-name = "Air to Ground Missiles"
+name = "Air to Ground Missile"
 icon = "💣"
 path = "Pages/Aviation_subsystems_Air_to_ground_missile.py"
 
 [[pages]]
-name = "Aviation Bombs"
+name = "Aviation Bomb"
 icon = "💣"
 path = "Pages/Aviation_subsystems_Aviation_bomb.py"
 
 [[pages]]
-name = "Aviation Pods"
+name = "Pods"
 icon = "🛫"
 path = "Pages/Aviation_subsystems_Pods.py"
 
@@ -154,7 +154,7 @@ icon = "🔫"
 path = "Pages/Firearms_Shotguns.py"
 
 [[pages]]
-name = "Special Firearms"
+name = "Special"
 icon = "🔫"
 path = "Pages/Firearms_Special.py"
 
@@ -164,7 +164,7 @@ icon = "🔫"
 path = "Pages/Firearms_Submachine_Guns.py"
 
 [[pages]]
-name = "Grenade Launchers"
+name = "Grenade Launcher"
 icon = "💣"
 path = "Pages/Infantry_Weapons_Grenade_Launcher.py"
 
@@ -199,7 +199,7 @@ icon = "🔫"
 path = "Pages/Vehicle_subsystems_Autocannon.py"
 
 [[pages]]
-name = "Cannons"
+name = "Cannon"
 icon = "🔫"
 path = "Pages/Vehicle_subsystems_Cannon.py"
 
