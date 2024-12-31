@@ -244,25 +244,6 @@ if st.session_state.current_page == "Home":
      return pdf_output_path
        
 
-    def generate_all_news_zip(news_data, image_folder):
-     zip_filename = "news_section.zip"
-     with zipfile.ZipFile(zip_filename, "w") as zipf:
-         for _, news_item in news_data.iterrows():
-             # Find the image path
-             image_path = None
-             if pd.notnull(news_item["Downloaded_Image_Name"]):
-                 image_name = news_item["Downloaded_Image_Name"]
-                 weapon_category = news_item["Weapon_Category"].replace(" ", "_")
-                 category_folder = os.path.join(image_folder, weapon_category)
-                 image_path = os.path.join(category_folder, image_name) if os.path.exists(category_folder) else None
-
-             # Generate PDF for each news item
-             pdf_path = generate_single_news_pdf(news_item, image_path)
-             zipf.write(pdf_path, os.path.basename(pdf_path))
-             os.remove(pdf_path)  # Clean up temporary PDF files
-
-     return zip_filename
-
     # Display the current news item
     current_news = news_data.iloc[st.session_state.news_index]
 
@@ -338,18 +319,6 @@ if st.session_state.current_page == "Home":
                     mime="application/pdf"
                 )
             os.remove(pdf_path)  # Clean up temporary file
-
-    # Button to download all news items
-    if st.button("Download All News as ZIP"):
-        zip_path = generate_all_news_zip(news_data, IMAGE_FOLDER)
-        with open(zip_path, "rb") as f:
-            st.download_button(
-                label="Download Complete News Section",
-                data=f,
-                file_name=os.path.basename(zip_path),
-                mime="application/zip"
-            )
-        os.remove(zip_path)  # Clean up temporary file
 
 # Dynamically Created Pages Based on .toml
 else:
