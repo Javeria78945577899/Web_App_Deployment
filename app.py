@@ -17,12 +17,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-# Database connection details
-DB_HOST = "junction.proxy.rlwy.net"
-DB_USER = "root"
-DB_PASSWORD = "GKesHFOMJkurJYvpaVNuqRgTEGYOgFQN"
-DB_NAME = "railway"
-DB_PORT = "27554"
+# Database connection details (Google Cloud SQL)
+DB_HOST = "34.174.135.218"  # Your Google Cloud SQL Public IP
+DB_USER = "root"  # Your MySQL user
+DB_PASSWORD = "osintwr12"  # Your MySQL root password
+DB_NAME = "StreamlitWeaponData"  # Your database name
+DB_PORT = "3306"  # MySQL default port
 
 # Define the database connection
 @st.cache_resource
@@ -32,21 +32,19 @@ def get_engine():
 
 engine = get_engine()
 
-# Load data from weapon_data1 and join with dbo_images
-# Load data from weapon_data1
+# Load first 11,448 records from dbo_final_text1
 @st.cache_data
 def load_data():
     query = """
     SELECT * 
-    FROM weapon_data1
-    WHERE Weapon_Name IN (
-        SELECT DISTINCT Weapon_Name
-        FROM weapon_data1
-    );
+    FROM dbo_final_text1
+    LIMIT 11448;
     """
-    return pd.read_sql(query, engine)
+    return pd.read_sql(query, con=engine)
 
-data = load_data()# Load the DistilBERT model and tokenizer
+# Fetch data
+data = load_data()
+
 
 # Resolve the directory path
 current_dir = Path(__file__).resolve().parent  # Use resolve() to get the absolute path
